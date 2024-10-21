@@ -1,0 +1,5 @@
+/prisma
+/**/*.generated.*
+schema.graphql
+migrate-mongo-config.js
+/migrations
