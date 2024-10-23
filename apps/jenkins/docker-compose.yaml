@@ -3,10 +3,6 @@ version: '3.8'
 networks:
   docker:
 
-volumes:
-  jenkins-data:
-  jenkins-docker-certs:
-
 name: jenkins
 
 services:
@@ -22,9 +18,9 @@ services:
       - 50000:50000
     tty: true
     volumes:
-      - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client:ro
-      - $HOME:/home
+      - /home/lbriza/_service-data/jenkins/data:/var/jenkins_home
+      - /home/lbriza/_service-data/jenkins/certs:/certs/client:ro
+      - /home/lbriza/_service-data/jenkins/home:/home
     environment:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
@@ -43,9 +39,9 @@ services:
       - 2376:2376
     tty: true
     volumes:
-      - jenkins-data:/var/jenkins_home
-      - jenkins-docker-certs:/certs/client
-      - $HOME:/home
+      - /home/lbriza/_service-data/jenkins/data:/var/jenkins_home
+      - /home/lbriza/_service-data/jenkins/certs:/certs/client
+      - /home/lbriza/_service-data/jenkins/home:/home
     environment:
       - DOCKER_TLS_CERTDIR=/certs
       
