@@ -10,6 +10,7 @@ services:
   jenkins:
     container_name: jenkins-controller
     image: jenkins/jenkins:latest-jdk17
+    user: "root:1000"
     restart: always
     networks:
       - docker
@@ -29,6 +30,7 @@ services:
   dind:
     container_name: jenkins-dind
     image: docker:dind
+    user: "root:1000"
     privileged: true
     restart: always
     networks:
