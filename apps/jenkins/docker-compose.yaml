@@ -10,7 +10,9 @@ services:
   jenkins:
     container_name: jenkins-controller
     image: jenkins/jenkins:latest-jdk17
-    user: "root:1000"
+    depends_on:
+      - dind 
+    user: root
     restart: always
     networks:
       - docker
@@ -18,6 +20,7 @@ services:
       - 8080:8080
       - 50000:50000
     tty: true
+    privileged: true
     volumes:
       - /home/lbriza/_service-data/jenkins/data:/var/jenkins_home
       - /home/lbriza/_service-data/jenkins/certs:/certs/client:ro
@@ -30,16 +33,14 @@ services:
   dind:
     container_name: jenkins-dind
     image: docker:dind
-    user: "root:1000"
+    # user: "root:1000"
     privileged: true
     restart: always
     networks:
-      docker:
-        aliases: 
-          - docker
+      - docker
     ports:
       - 2376:2376
-    tty: true
+    # tty: true
     volumes:
       - /home/lbriza/_service-data/jenkins/data:/var/jenkins_home
       - /home/lbriza/_service-data/jenkins/certs:/certs/client
