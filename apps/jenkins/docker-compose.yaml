@@ -1,9 +1,7 @@
-version: '3.8'
-
 networks:
   docker:
 
-name: jenkins
+name: jenkins-passbolt
 
 services:
 
@@ -51,7 +49,7 @@ services:
       - DOCKER_DRIVER=overlay2
   
   db:
-    container_name: jenkins-passbolt-database
+    container_name: passbolt-database
     image: mariadb:11.5.2
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "true"
@@ -64,7 +62,7 @@ services:
       - docker
   
   passbolt:
-    container_name: jenkins-passbolt-app
+    container_name: passbolt-app
     image: passbolt/passbolt:latest-ce
     restart: unless-stopped
     depends_on:
