@@ -91,7 +91,6 @@ services:
       ]
     ports:
       - ${PASSBOLT_EXPOSE_PORT}:80
-      - 443:443
     networks:
       - docker
 
