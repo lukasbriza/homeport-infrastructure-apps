@@ -1,0 +1,29 @@
+{
+  "name": "api-processor",
+  "version": "1.0.0",
+  "description": "Internal jenkins application for processing api requests to portainer and passbolt",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon",
+    "start": "ts-node ./src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@lukasbriza/eslint-config": "workspace:*",
+    "@lukasbriza/ts-config": "workspace:*",
+    "axios": "1.7.7",
+    "cookie-parser": "1.4.7",
+    "dotenv": "16.4.5",
+    "express": "4.21.1",
+    "openpgp": "5.11.2"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "1.4.7",
+    "@types/express": "5.0.0",
+    "@types/node": "20.14.9",
+    "nodemon": "3.1.7",
+    "ts-node": "10.9.2"
+  }
+}
