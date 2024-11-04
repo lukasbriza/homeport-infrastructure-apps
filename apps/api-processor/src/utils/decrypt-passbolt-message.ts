@@ -1,5 +1,6 @@
 import * as openpgp from 'openpgp'
-import { getPassboltPrivateKey } from "./getPassboltPrivateKey"
+
+import { getPassboltPrivateKey } from './get-passbolt-private-key'
 
 export const decryptPassboltMessage = async (encryptedMessage: string) => {
   const privateKey = await getPassboltPrivateKey()

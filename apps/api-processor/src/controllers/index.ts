@@ -1,1 +1,1 @@
-export * from "./passbolt"
+export * from './passbolt'

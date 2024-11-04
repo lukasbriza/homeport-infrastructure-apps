@@ -1,50 +1,62 @@
-import { Router, Request, Response } from "express"
-import axios from "axios"
-import { authenticate } from "../middlewares/passbolt"
-import { decryptPassboltMessage, verifyEnv } from "../utils"
-import { passboltPaths } from "../paths"
+/* eslint-disable no-loop-func */
+
+import axios from 'axios'
+import type { Response } from 'express'
+import { Router } from 'express'
+
+import { authenticate } from '../middlewares/passbolt'
+import { passboltPaths } from '../paths'
+import type { AuthenticatedRequest, FolderResponsePartial } from '../types'
+import { decryptPassboltMessage, verifyEnvironment } from '../utils'
 
 export const passbolt = Router()
 
 passbolt
-  .route("/folder-secrets/:folderId")
-  .get(authenticate, async (req: Request, res: Response) => {
+  .route('/folder-secrets/:folderId')
+  .get(authenticate, async (request: AuthenticatedRequest<{ folderId: string }>, response: Response) => {
     try {
-      verifyEnv([
-        process.env.PASSBOLT_API
-      ])
-      const url = `${process.env.PASSBOLT_API}${passboltPaths.resources}?contain[secret]=1&filter[has-parent]=${req.params.folderId}`
-      const folderResourceResponse = await axios.get(url, {
+      verifyEnvironment([process.env.PASSBOLT_API])
+      const url = `${process.env.PASSBOLT_API}${passboltPaths.resources}?contain[secret]=1&filter[has-parent]=${request.params.folderId}`
+      const folderResourceResponse = await axios.get<{ body: FolderResponsePartial }>(url, {
         headers: {
-          Cookie: req.body.cookie.join(";")
+          Cookie: request.body.cookie.join(';'),
         },
-        withCredentials: true
+        withCredentials: true,
       })
 
       if (folderResourceResponse.status !== 200) {
+        // eslint-disable-next-line no-console
         console.error(folderResourceResponse.data)
-        throw new Error("Retrieving folder resources was not successfull.")
+        throw new Error('Retrieving folder resources was not successfull.')
       }
 
-      const secretsRepsonseArray: Record<string, any>[] = folderResourceResponse.data.body
-      let repsonse: Object = {}
+      const secretsRepsonseArray: FolderResponsePartial = folderResourceResponse.data.body
+      let responseData: object = {}
+      const promiseArray: Promise<void>[] = []
 
-      for (let i = 0; i < secretsRepsonseArray.length; i++) {
-        const object = secretsRepsonseArray[i]
+      for (const object of secretsRepsonseArray) {
         const secretPgpMessage = decodeURIComponent(object.secrets[0].data)
-        const secret = await decryptPassboltMessage(secretPgpMessage)
-        const parsed = JSON.parse(secret.toString()) as { password: string, description: string }
-        repsonse = Object.assign(repsonse, repsonse, { [object.name]: parsed.password })
+        promiseArray.push(
+          decryptPassboltMessage(secretPgpMessage).then((secret) => {
+            const parsed = JSON.parse(String(secret)) as { password: string; description: string }
+            responseData = Object.assign(responseData, responseData, { [object.name]: parsed.password })
+          }),
+        )
       }
 
-      res.status(200).send(repsonse)
+      await Promise.all(promiseArray)
+
+      response.status(200).send(responseData)
     } catch (error) {
-      console.log(error)
+      // eslint-disable-next-line no-console
+      console.error(error)
       if (error instanceof Error) {
-        res.status(400).json({ message: error.message }).send()
+        response.status(400).json({ message: error.message }).send()
         return
       }
-      res.status(400).json({ message: `Unknown error: ${error}` }).send()
-      return
+      response
+        .status(400)
+        .json({ message: `Unknown error: ${String(error)}` })
+        .send()
     }
   })

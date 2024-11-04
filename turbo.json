@@ -1,31 +1,59 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "PASSBOLT_API",
+    "API_USER_FINGERPRINT",
+    "APU_USE_PASSPHRASE",
+    "API_USER_PRIVATE_KEY"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**/*", "tsconfig.tsbuildinfo", "tsconfig.build.tsbuildinfo"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**/*",
+        "tsconfig.tsbuildinfo",
+        "tsconfig.build.tsbuildinfo"
+      ]
     },
     "lint": {
-      "dependsOn": ["^build"],
-      "outputs": [".eslintcache"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".eslintcache"
+      ]
     },
     "lint:fix": {
-      "dependsOn": ["^build"],
-      "outputs": [".eslintchache"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".eslintchache"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "ts": {
-      "dependsOn": ["^build"],
-      "outputs": ["tsconfig.tsbuildinfo"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "tsconfig.tsbuildinfo"
+      ]
     },
     "cleanup": {
       "cache": false
     },
     "run": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false
     }
   }
