@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express"
 import axios from "axios"
 import { authenticate } from "../middlewares/passbolt"
+import { decryptPassboltMessage, verifyEnv } from "../utils"
 import { passboltPaths } from "../paths"
-import { verifyEnv } from "../utils"
 
 export const passbolt = Router()
 
@@ -14,17 +14,30 @@ passbolt
         process.env.PASSBOLT_API
       ])
       const url = `${process.env.PASSBOLT_API}${passboltPaths.resources}?contain[secret]=1&filter[has-parent]=${req.params.folderId}`
-      console.log("here")
-      const folderResourceResponse = await axios.get(url)
-      console.log(folderResourceResponse)
+      const folderResourceResponse = await axios.get(url, {
+        headers: {
+          Cookie: req.body.cookie.join(";")
+        },
+        withCredentials: true
+      })
 
       if (folderResourceResponse.status !== 200) {
         console.error(folderResourceResponse.data)
         throw new Error("Retrieving folder resources was not successfull.")
       }
 
+      const secretsRepsonseArray: Record<string, any>[] = folderResourceResponse.data.body
+      let repsonse: Object = {}
 
-      res.status(200).send()
+      for (let i = 0; i < secretsRepsonseArray.length; i++) {
+        const object = secretsRepsonseArray[i]
+        const secretPgpMessage = decodeURIComponent(object.secrets[0].data)
+        const secret = await decryptPassboltMessage(secretPgpMessage)
+        const parsed = JSON.parse(secret.toString()) as { password: string, description: string }
+        repsonse = Object.assign(repsonse, repsonse, { [object.name]: parsed.password })
+      }
+
+      res.status(200).send(repsonse)
     } catch (error) {
       console.log(error)
       if (error instanceof Error) {

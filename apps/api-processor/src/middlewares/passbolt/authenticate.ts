@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express"
 import axios from "axios"
-import * as openpgp from 'openpgp';
 import { passboltPaths } from "../../paths"
-import { verifyEnv } from "../../utils";
+import { decryptPassboltMessage, verifyEnv } from "../../utils"
 
-export const authenticate = async (_: Request, res: Response, next: NextFunction) => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // VERIFY IF ENV VARIABLES SET
     verifyEnv([
@@ -36,7 +35,6 @@ export const authenticate = async (_: Request, res: Response, next: NextFunction
     const apiUserFingerprint = process.env.API_USER_FINGERPRINT
     const loginUrl = `${process.env.PASSBOLT_API}${passboltPaths.login}`
     const login1stStageResponse = await axios.post(loginUrl, { data: { gpg_auth: { keyid: apiUserFingerprint } } })
-    console.log("login1stStageResponse")
 
     if (login1stStageResponse.status !== 200) {
       console.error(login1stStageResponse.data)
@@ -57,16 +55,12 @@ export const authenticate = async (_: Request, res: Response, next: NextFunction
       .replace('BEGIN\\+PGP\\+MESSAGE', "BEGIN PGP MESSAGE")
       .replace('END\\+PGP\\+MESSAGE', "END PGP MESSAGE")
 
-    const message = await openpgp.readMessage({ armoredMessage: userPgpAuthToken })
-    const passphrase = "ajgx84lbSPUawgLZh0IO"
-    const privateKey = await openpgp.decryptKey({
-      privateKey: await openpgp.readPrivateKey({ armoredKey: process.env.API_USER_PRIVATE_KEY as string }),
-      passphrase,
-    })
+    const token = await decryptPassboltMessage(userPgpAuthToken)
+    const login2ndStageResponse = await axios.post(loginUrl, { data: { gpg_auth: { keyid: apiUserFingerprint, user_token_result: token } } })
 
-    const { data } = await openpgp.decrypt({ message, decryptionKeys: privateKey })
-
-    const login2ndStageResponse = await axios.post(loginUrl, { data: { gpg_auth: { keyid: apiUserFingerprint, user_token_result: data } } })
+    req.body = {
+      cookie: login2ndStageResponse.headers["set-cookie"]
+    }
 
     if (
       (login2ndStageResponse.headers["x-gpgauth-authenticated"] !== "true" &&
