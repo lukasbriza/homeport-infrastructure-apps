@@ -1,0 +1,6 @@
+{
+  "extends": "@lukasbriza/ts-config",
+  "include": [".eslintrc.cjs", "**/*.js", "**/*.mjs", "**/*.ts", "**/*.json", "**/*.bin"],
+  "exclude": ["build", "node_modules"],
+  "compilerOptions": { "sourceMap": true,"module":"ESNext", "moduleResolution": "node", }
+}
