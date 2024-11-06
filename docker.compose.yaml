@@ -93,7 +93,7 @@ services:
   passbolt:
     container_name: passbolt-app
     image: passbolt/passbolt:latest-ce
-    restart: unless-stopped
+    restart: always
     depends_on:
       - db
     environment:
