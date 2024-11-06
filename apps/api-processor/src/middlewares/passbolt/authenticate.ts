@@ -1,6 +1,5 @@
 import axios from 'axios'
 import type { NextFunction, Request, Response } from 'express'
-
 import { passboltPaths } from '../../paths'
 import type { PublicKeyResponse } from '../../types'
 import { decryptPassboltMessage, verifyEnvironment } from '../../utils'
@@ -12,7 +11,7 @@ export const authenticate = async (request: Request, response: Response, next: N
       process.env.API_USER_FINGERPRINT,
       process.env.PASSBOLT_API,
       process.env.API_USER_PRIVATE_KEY,
-      process.env.APU_USE_PASSPHRASE,
+      process.env.API_USER_PASSPHRASE,
     ])
 
     const getPublicKeyUrl = `${process.env.PASSBOLT_API}${passboltPaths.getPublicKey}`

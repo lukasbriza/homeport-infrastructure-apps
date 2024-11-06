@@ -3,8 +3,9 @@
   "globalEnv": [
     "PASSBOLT_API",
     "API_USER_FINGERPRINT",
-    "APU_USE_PASSPHRASE",
-    "API_USER_PRIVATE_KEY"
+    "API_USER_PASSPHRASE",
+    "API_USER_PRIVATE_KEY",
+    "API_PORT"
   ],
   "tasks": {
     "build": {
@@ -47,6 +48,7 @@
         "tsconfig.tsbuildinfo"
       ]
     },
+    "tsc": {},
     "cleanup": {
       "cache": false
     },

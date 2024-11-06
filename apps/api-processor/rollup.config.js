@@ -13,10 +13,10 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    typescript(), // Compile TypeScript files
-    json(),
     resolve(), // Locate and bundle dependencies in `node_modules`
     commonjs(), // Convert CommonJS modules to ES6
+    json(),
+    typescript(), // Compile TypeScript files
     terser(), // Minify for production
   ],
   external: ['openpgp', 'express'],

@@ -2,8 +2,8 @@ import * as openpgp from 'openpgp'
 
 export const getPassboltPrivateKey = async () => {
   const privateKey = await openpgp.decryptKey({
-    privateKey: await openpgp.readPrivateKey({ armoredKey: process.env.API_USER_PRIVATE_KEY as string }),
-    passphrase: process.env.APU_USE_PASSPHRASE as string,
+    privateKey: await openpgp.readPrivateKey({ armoredKey: String(process.env.API_USER_PRIVATE_KEY) }),
+    passphrase: String(process.env.API_USER_PASSPHRASE),
   })
   return privateKey
 }

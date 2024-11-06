@@ -1,16 +1,38 @@
 version: '3.8'
 
+# NEED TO DEFINE THIS VARIABLES IN .ENV #
+#########################################
+# - JENKINS_EXPOSE_PORT
+# - PASSBOLT_EXPOSE_PORT
+# - PASSBOLT_EXPOSE_HTTPS_PORT
+# - PASSBOLT_API
+# - API_USER_PASSPHRASE
+# - API_USER_FINGERPRINT
+# - API_USER_PRIVATE_KEY
+# - APP_FULL_BASE_URL
+# - EMAIL_TRANSPORT_DEFAULT_HOST
+# - EMAIL_TRANSPORT_DEFAULT_PORT
+# - EMAIL_TRANSPORT_DEFAULT_USERNAME
+# - EMAIL_TRANSPORT_DEFAULT_PASSWORD
+# - HOST_JENKINS_DATA_PATH
+# - HOST_JENKINS_CERTS_PATH
+# - HOST_JENKINS_HOME_PATH
+# - HOST_PASSBOLT_DATABASE_PATH
+# - HOST_PASSBOLT_GPG_PATH
+# - HOST_PASSBOLT_JWT_PATH
+
 networks:
   docker:
 
 name: jenkins-passbolt
 
 services:
-
   jenkins:
+    image: jenkins-controller
     container_name: jenkins-controller
-    image: jenkins/jenkins:latest-jdk17
-    build: .
+    build:
+      context: .
+      dockerfile: apps/jenkins/Dockerfile
     depends_on:
       - dind 
     user: root
@@ -30,6 +52,10 @@ services:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
+      - PASSBOLT_API=${PASSBOLT_API}
+      - API_USER_FINGERPRINT=${API_USER_FINGERPRINT}
+      - API_USER_PASSPHRASE=${API_USER_PASSPHRASE}
+      - API_USER_PRIVATE_KEY=${API_USER_PRIVATE_KEY}
 
   dind:
     container_name: jenkins-dind
@@ -53,6 +79,7 @@ services:
   db:
     container_name: passbolt-database
     image: mariadb:11.5.2
+    restart: always
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "true"
       MYSQL_DATABASE: "passbolt"
@@ -71,10 +98,10 @@ services:
       - db
     environment:
       APP_FULL_BASE_URL: ${APP_FULL_BASE_URL}
-      DATASOURCES_DEFAULT_HOST: "db"
-      DATASOURCES_DEFAULT_USERNAME: "passbolt"
-      DATASOURCES_DEFAULT_PASSWORD: "P4ssb0lt"
-      DATASOURCES_DEFAULT_DATABASE: "passbolt"
+      DATASOURCES_DEFAULT_HOST: db
+      DATASOURCES_DEFAULT_USERNAME: passbolt
+      DATASOURCES_DEFAULT_PASSWORD: P4ssb0lt
+      DATASOURCES_DEFAULT_DATABASE: passbolt
       EMAIL_TRANSPORT_DEFAULT_HOST: ${EMAIL_TRANSPORT_DEFAULT_HOST}
       EMAIL_TRANSPORT_DEFAULT_PORT: ${EMAIL_TRANSPORT_DEFAULT_PORT}
       EMAIL_TRANSPORT_DEFAULT_USERNAME: ${EMAIL_TRANSPORT_DEFAULT_USERNAME}
@@ -93,7 +120,7 @@ services:
       ]
     ports:
       - ${PASSBOLT_EXPOSE_PORT}:80
-      - ${PASSBOLT_HTTPS_EXPOSE_PORT}:443
+      - ${PASSBOLT_EXPOSE_HTTPS_PORT}:443
     networks:
       - docker
 

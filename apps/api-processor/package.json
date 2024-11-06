@@ -1,5 +1,5 @@
 {
-  "name": "api-processor",
+  "name": "@lukasbriza/api-processor",
   "version": "1.0.0",
   "private": true,
   "description": "Internal jenkins application for processing api requests to portainer and passbolt",
@@ -8,6 +8,10 @@
   "scripts": {
     "dev": "nodemon",
     "start": "node ./build/server.js",
+    "start:production": "pm2 start ./build/server.js --name api-processor",
+    "stop:production": "pm2 stop api-processor & pm2 delete api-processor",
+    "lint": "eslint --cache .",
+    "lint:fix": "pnpm run lint --fix",
     "build": "rollup -c"
   },
   "keywords": [],
@@ -20,7 +24,8 @@
     "cookie-parser": "1.4.7",
     "dotenv": "16.4.5",
     "express": "4.21.1",
-    "openpgp": "5.11.2"
+    "openpgp": "5.11.2",
+    "pm2": "5.4.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "28.0.1",

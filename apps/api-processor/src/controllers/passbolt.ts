@@ -1,9 +1,7 @@
 /* eslint-disable no-loop-func */
-
 import axios from 'axios'
 import type { Response } from 'express'
 import { Router } from 'express'
-
 import { authenticate } from '../middlewares/passbolt'
 import { passboltPaths } from '../paths'
 import type { AuthenticatedRequest, FolderResponsePartial } from '../types'

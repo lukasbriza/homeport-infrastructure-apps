@@ -13,7 +13,6 @@ export const imports: Linter.RulesRecord = {
         order: 'asc',
       },
       groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-      'newlines-between': 'always',
     },
   ],
   'import/prefer-default-export': 'off', // Prefer named exports
