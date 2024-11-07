@@ -1,5 +1,3 @@
-version: '3.8'
-
 # NEED TO DEFINE THIS VARIABLES IN .ENV #
 #########################################
 # - JENKINS_EXPOSE_PORT
