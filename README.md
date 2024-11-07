@@ -42,6 +42,8 @@ For production, use `docker-compose.yaml`, which requires specific environment v
   PASSBOLT_API_USER_PASSPHRASE=<passphrase>
   PASSBOLT_API_USER_FINGERPRINT=<fingerprint>
   PASSBOLT_API_USER_PRIVATE_KEY=<private_key>
+  PORTAINER_API_ACESS_TOKEN=<api_key>
+  PORTAINER_API=<portainer_api_url>
 
   # Passbolt
   APP_FULL_BASE_URL=<your_server_base_url>
