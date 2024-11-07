@@ -5,7 +5,7 @@ import { Router } from 'express'
 import { authenticate } from '../middlewares/passbolt'
 import { passboltPaths } from '../paths'
 import type { AuthenticatedRequest, FolderResponsePartial } from '../types'
-import { decryptPassboltMessage, verifyEnvironment } from '../utils'
+import { decryptPassboltMessage, processRequestFailed, verifyEnvironment } from '../utils'
 
 export const passbolt = Router()
 
@@ -46,15 +46,6 @@ passbolt
 
       response.status(200).send(responseData)
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error)
-      if (error instanceof Error) {
-        response.status(400).json({ message: error.message }).send()
-        return
-      }
-      response
-        .status(400)
-        .json({ message: `Unknown error: ${String(error)}` })
-        .send()
+      processRequestFailed(error, response)
     }
   })
