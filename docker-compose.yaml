@@ -26,7 +26,6 @@ name: jenkins-passbolt
 
 services:
   jenkins:
-    image: jenkins-controller
     container_name: jenkins-controller
     build:
       context: .

@@ -1,3 +1,4 @@
+import babel from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
@@ -13,11 +14,16 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    resolve(), // Locate and bundle dependencies in `node_modules`
-    commonjs(), // Convert CommonJS modules to ES6
+    resolve(),
+    commonjs(),
     json(),
-    typescript(), // Compile TypeScript files
-    terser(), // Minify for production
+    typescript(),
+    babel({
+      extensions: ['.js', '.mjs', '.ts'],
+      babelHelpers: 'bundled',
+      presets: ['@babel/preset-env', '@babel/preset-typescript'],
+    }),
+    terser(),
   ],
-  external: ['openpgp', 'express'],
+  external: ['openpgp', 'express', 'yup', 'pm2'],
 }
