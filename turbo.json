@@ -2,10 +2,12 @@
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
     "PASSBOLT_API",
-    "API_USER_FINGERPRINT",
-    "API_USER_PASSPHRASE",
-    "API_USER_PRIVATE_KEY",
-    "API_PORT"
+    "PASSBOLT_API_USER_FINGERPRINT",
+    "PASSBOLT_API_USER_PASSPHRASE",
+    "PASSBOLT_API_USER_PRIVATE_KEY",
+    "API_PORT",
+    "PORTAINER_API",
+    "PORTAINER_API_ACESS_TOKEN"
   ],
   "tasks": {
     "build": {

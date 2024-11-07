@@ -8,10 +8,10 @@ export const authenticate = async (request: Request, response: Response, next: N
   try {
     // VERIFY IF ENV VARIABLES SET
     verifyEnvironment([
-      process.env.API_USER_FINGERPRINT,
+      process.env.PASSBOLT_API_USER_FINGERPRINT,
       process.env.PASSBOLT_API,
-      process.env.API_USER_PRIVATE_KEY,
-      process.env.API_USER_PASSPHRASE,
+      process.env.PASSBOLT_API_USER_PRIVATE_KEY,
+      process.env.PASSBOLT_API_USER_PASSPHRASE,
     ])
 
     const getPublicKeyUrl = `${process.env.PASSBOLT_API}${passboltPaths.getPublicKey}`
@@ -32,7 +32,7 @@ export const authenticate = async (request: Request, response: Response, next: N
     }
 
     // MAKE 1ST STAGE OF LOGIN
-    const apiUserFingerprint = process.env.API_USER_FINGERPRINT
+    const apiUserFingerprint = process.env.PASSBOLT_API_USER_FINGERPRINT
     const loginUrl = `${process.env.PASSBOLT_API}${passboltPaths.login}`
     const login1stStageResponse = await axios.post(loginUrl, { data: { gpg_auth: { keyid: apiUserFingerprint } } })
 
