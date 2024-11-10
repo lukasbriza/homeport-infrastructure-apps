@@ -26,6 +26,7 @@
     "ts": "tsc --build tsconfig.json"
   },
   "dependencies": {
+    "@lukasbriza/ts-config": "workspace:*",
     "@next/eslint-plugin-next": "14.2.4",
     "@types/eslint": "8.56.10",
     "@typescript-eslint/eslint-plugin": "7.15.0",

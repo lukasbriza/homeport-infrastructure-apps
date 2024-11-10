@@ -7,8 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon",
-    "start:production": "pm2 start ./build/server.js --name api-processor",
-    "stop:production": "pm2 stop api-processor & pm2 delete api-processor",
+    "start:production": "node ./build/server.js",
     "lint": "eslint --cache .",
     "lint:fix": "pnpm run lint --fix",
     "build": "rollup -c"
@@ -24,7 +23,6 @@
     "dotenv": "16.4.5",
     "express": "4.21.1",
     "openpgp": "5.11.2",
-    "pm2": "5.4.2",
     "yup": "1.4.0"
   },
   "devDependencies": {
@@ -42,7 +40,6 @@
     "@types/node": "20.14.9",
     "nodemon": "3.1.7",
     "rollup": "4.24.4",
-    "ts-node": "10.9.2",
     "typescript": "5.5.3"
   }
 }

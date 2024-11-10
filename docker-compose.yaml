@@ -18,6 +18,7 @@
 # - HOST_PASSBOLT_DATABASE_PATH
 # - HOST_PASSBOLT_GPG_PATH
 # - HOST_PASSBOLT_JWT_PATH
+# - API_PROCESSOR_PORT
 
 networks:
   docker:
@@ -27,9 +28,7 @@ name: jenkins-passbolt
 services:
   jenkins:
     container_name: jenkins-controller
-    build:
-      context: .
-      dockerfile: apps/jenkins/Dockerfile
+    image: jenkins/jenkins:latest-jdk17
     depends_on:
       - dind 
     user: root
@@ -57,6 +56,30 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+  api-processor:
+    container_name: api-processor
+    build:
+      context: .
+      dockerfile: apps/api-processor/Dockerfile
+    user: root
+    restart: always
+    networks:
+      - docker
+    ports:
+      - ${API_PROCESSOR_PORT}:3001
+    tty: true
+    privileged: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   dind:
     container_name: jenkins-dind
@@ -79,6 +102,11 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
   db:
     container_name: passbolt-database
@@ -96,6 +124,11 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
   passbolt:
     container_name: passbolt-app
@@ -133,6 +166,11 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   passbolt_database_volume:
