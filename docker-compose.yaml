@@ -53,9 +53,6 @@ services:
       - PASSBOLT_API_USER_FINGERPRINT=${PASSBOLT_API_USER_FINGERPRINT}
       - PASSBOLT_API_USER_PASSPHRASE=${PASSBOLT_API_USER_PASSPHRASE}
       - PASSBOLT_API_USER_PRIVATE_KEY=${PASSBOLT_API_USER_PRIVATE_KEY}
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     logging:
       driver: "json-file"
       options:
@@ -99,9 +96,6 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=/certs
       - DOCKER_DRIVER=overlay2
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     logging:
       driver: "json-file"
       options:
@@ -121,9 +115,6 @@ services:
       - passbolt_database_volume:/var/lib/mysql
     networks:
       - docker
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     logging:
       driver: "json-file"
       options:
@@ -163,9 +154,6 @@ services:
       - ${PASSBOLT_EXPOSE_HTTPS_PORT}:443
     networks:
       - docker
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     logging:
       driver: "json-file"
       options:
