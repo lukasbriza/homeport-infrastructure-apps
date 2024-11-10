@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-loop-func */
 import axios from 'axios'
 import type { Response } from 'express'
@@ -21,10 +22,17 @@ passbolt
         },
         withCredentials: true,
       })
+      console.group()
+      console.log('folderResourceResponse:')
+      console.log(folderResourceResponse)
+      console.groupEnd()
 
       if (folderResourceResponse.status !== 200) {
-        // eslint-disable-next-line no-console
-        console.error(folderResourceResponse.data)
+        console.group()
+        console.log('folderResourceResponse Error:')
+        console.log('Status:', folderResourceResponse.status)
+        console.log(folderResourceResponse)
+        console.groupEnd()
         throw new Error('Retrieving folder resources was not successfull.')
       }
 

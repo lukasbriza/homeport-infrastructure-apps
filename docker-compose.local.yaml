@@ -7,14 +7,10 @@ name: jenkins-passbolt
 
 services:
   jenkins:
-    image: jenkins-controller
+    image:  jenkins/jenkins:latest-jdk17
     container_name: jenkins-controller
     env_file:
-      - apps/api-processor/.env
       - apps/jenkins/.env
-    build:
-      context: .
-      dockerfile: apps/jenkins/Dockerfile
     depends_on:
       - dind 
     user: root
@@ -34,6 +30,32 @@ services:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api-processor:
+    container_name: api-processor
+    build:
+      context: .
+      dockerfile: apps/api-processor/Dockerfile
+    env_file:
+      - apps/api-processor/.env
+    user: root
+    restart: always
+    networks:
+      - docker
+    ports:
+      - 3001:3001
+    tty: true
+    privileged: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   dind:
     container_name: jenkins-dind
@@ -53,6 +75,11 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=/certs
       - DOCKER_DRIVER=overlay2
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
   db:
     container_name: passbolt-database
@@ -67,6 +94,11 @@ services:
       - passbolt_database_volume:/var/lib/mysql
     networks:
       - docker
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
   passbolt:
     container_name: passbolt-app
@@ -101,6 +133,11 @@ services:
       - 1002:443
     networks:
       - docker
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   passbolt_database_volume:

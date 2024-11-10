@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import axios from 'axios'
 import type { NextFunction, Request, Response } from 'express'
 import { passboltPaths } from '../../paths'
@@ -18,9 +19,17 @@ export const authenticate = async (request: Request, response: Response, next: N
 
     // GET PASSBOLT SERVER PUBLIC KEY
     const publicKeyResponse = await axios.get<{ body: PublicKeyResponse }>(getPublicKeyUrl)
+    console.group()
+    console.log('publicKeyResponse:')
+    console.log(publicKeyResponse)
+    console.groupEnd()
 
     if (publicKeyResponse.status !== 200) {
-      console.error(publicKeyResponse.data)
+      console.group()
+      console.log('publicKeyResponse Error:')
+      console.log('Status:', publicKeyResponse.status)
+      console.log(publicKeyResponse)
+      console.groupEnd()
       throw new Error(`Obtaining passbolt server public key failed. URL: ${getPublicKeyUrl}`)
     }
 
@@ -35,9 +44,17 @@ export const authenticate = async (request: Request, response: Response, next: N
     const apiUserFingerprint = process.env.PASSBOLT_API_USER_FINGERPRINT
     const loginUrl = `${process.env.PASSBOLT_API}${passboltPaths.login}`
     const login1stStageResponse = await axios.post(loginUrl, { data: { gpg_auth: { keyid: apiUserFingerprint } } })
+    console.group()
+    console.log('login1stStageResponse:')
+    console.log(login1stStageResponse)
+    console.groupEnd()
 
     if (login1stStageResponse.status !== 200) {
-      console.error(login1stStageResponse.data)
+      console.group()
+      console.log('login1stStageResponse Error:')
+      console.log('Status:', login1stStageResponse.status)
+      console.log(login1stStageResponse)
+      console.groupEnd()
       throw new Error('Passbolt login Stage1 failed.')
     }
 

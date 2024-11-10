@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import axios from 'axios'
 import type { Request, Response } from 'express'
 import { Router } from 'express'
@@ -18,9 +19,17 @@ portainer.route('/stacks').get(async (_: Request, response: Response) => {
       },
       withCredentials: true,
     })
+    console.group()
+    console.log('getStacksResponse:')
+    console.log(getStacksResponse)
+    console.groupEnd()
 
     if (getStacksResponse.status !== 200) {
-      console.error(getStacksResponse.data)
+      console.group()
+      console.log('getStacksResponse Error:')
+      console.log('Status:', getStacksResponse.status)
+      console.log(getStacksResponse)
+      console.groupEnd()
       throw new Error('Retrieving portainer stacks failed.')
     }
 
@@ -45,9 +54,17 @@ portainer
         },
         withCredentials: true,
       })
+      console.group()
+      console.log('deployStackResponse:')
+      console.log(deployStackResponse)
+      console.groupEnd()
 
       if (deployStackResponse.status !== 200) {
-        console.error(deployStackResponse.data)
+        console.group()
+        console.log('deployStackResponse Error:')
+        console.log('Status:', deployStackResponse.status)
+        console.log(deployStackResponse)
+        console.groupEnd()
         throw new Error('Deploying portainer stacks failed.')
       }
 
@@ -69,9 +86,17 @@ portainer
         },
         withCredentials: true,
       })
+      console.group()
+      console.log('redeployStackResponse:')
+      console.log(redeployStackResponse)
+      console.groupEnd()
 
       if (redeployStackResponse.status !== 200) {
-        console.error(redeployStackResponse.data)
+        console.group()
+        console.log('redeployStackResponse Error:')
+        console.log('Status:', redeployStackResponse.status)
+        console.log(redeployStackResponse)
+        console.groupEnd()
         throw new Error('Deploying portainer stacks failed.')
       }
 
@@ -92,9 +117,17 @@ portainer.route('/endpoints').get(async (_: Request, response: Response) => {
       },
       withCredentials: true,
     })
+    console.group()
+    console.log('getEndpointsResponse:')
+    console.log(getEndpointsResponse)
+    console.groupEnd()
 
     if (getEndpointsResponse.status !== 200) {
-      console.error(getEndpointsResponse.data)
+      console.group()
+      console.log('getEndpointsResponse Error:')
+      console.log('Status:', getEndpointsResponse.status)
+      console.log(getEndpointsResponse)
+      console.groupEnd()
       throw new Error('Retrieving portainer endpoints failed.')
     }
 
