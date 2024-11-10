@@ -22,6 +22,7 @@ portainer.route('/stacks').get(async (_: Request, response: Response) => {
     console.group()
     console.log('getStacksResponse:')
     console.log(getStacksResponse)
+    console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
 
     if (getStacksResponse.status !== 200) {
@@ -29,6 +30,7 @@ portainer.route('/stacks').get(async (_: Request, response: Response) => {
       console.log('getStacksResponse Error:')
       console.log('Status:', getStacksResponse.status)
       console.log(getStacksResponse)
+      console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
       throw new Error('Retrieving portainer stacks failed.')
     }
@@ -57,6 +59,7 @@ portainer
       console.group()
       console.log('deployStackResponse:')
       console.log(deployStackResponse)
+      console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
 
       if (deployStackResponse.status !== 200) {
@@ -64,6 +67,7 @@ portainer
         console.log('deployStackResponse Error:')
         console.log('Status:', deployStackResponse.status)
         console.log(deployStackResponse)
+        console.log('-------------------------------------------------------------------------------------')
         console.groupEnd()
         throw new Error('Deploying portainer stacks failed.')
       }
@@ -89,6 +93,7 @@ portainer
       console.group()
       console.log('redeployStackResponse:')
       console.log(redeployStackResponse)
+      console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
 
       if (redeployStackResponse.status !== 200) {
@@ -96,6 +101,7 @@ portainer
         console.log('redeployStackResponse Error:')
         console.log('Status:', redeployStackResponse.status)
         console.log(redeployStackResponse)
+        console.log('-------------------------------------------------------------------------------------')
         console.groupEnd()
         throw new Error('Deploying portainer stacks failed.')
       }
@@ -120,6 +126,7 @@ portainer.route('/endpoints').get(async (_: Request, response: Response) => {
     console.group()
     console.log('getEndpointsResponse:')
     console.log(getEndpointsResponse)
+    console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
 
     if (getEndpointsResponse.status !== 200) {
@@ -127,6 +134,7 @@ portainer.route('/endpoints').get(async (_: Request, response: Response) => {
       console.log('getEndpointsResponse Error:')
       console.log('Status:', getEndpointsResponse.status)
       console.log(getEndpointsResponse)
+      console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
       throw new Error('Retrieving portainer endpoints failed.')
     }

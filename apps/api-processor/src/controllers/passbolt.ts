@@ -25,6 +25,7 @@ passbolt
       console.group()
       console.log('folderResourceResponse:')
       console.log(folderResourceResponse)
+      console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
 
       if (folderResourceResponse.status !== 200) {
@@ -32,6 +33,7 @@ passbolt
         console.log('folderResourceResponse Error:')
         console.log('Status:', folderResourceResponse.status)
         console.log(folderResourceResponse)
+        console.log('-------------------------------------------------------------------------------------')
         console.groupEnd()
         throw new Error('Retrieving folder resources was not successfull.')
       }

@@ -47,6 +47,7 @@ export const authenticate = async (request: Request, response: Response, next: N
     console.group()
     console.log('login1stStageResponse:')
     console.log(login1stStageResponse)
+    console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
 
     if (login1stStageResponse.status !== 200) {
@@ -54,6 +55,7 @@ export const authenticate = async (request: Request, response: Response, next: N
       console.log('login1stStageResponse Error:')
       console.log('Status:', login1stStageResponse.status)
       console.log(login1stStageResponse)
+      console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
       throw new Error('Passbolt login Stage1 failed.')
     }
@@ -82,6 +84,11 @@ export const authenticate = async (request: Request, response: Response, next: N
     const login2ndStageResponse = await axios.post(loginUrl, {
       data: { gpg_auth: { keyid: apiUserFingerprint, user_token_result: token } },
     })
+    console.group()
+    console.log('login2ndStageResponse:')
+    console.log(login2ndStageResponse)
+    console.log('-------------------------------------------------------------------------------------')
+    console.groupEnd()
 
     request.body = {
       cookie: login2ndStageResponse.headers['set-cookie'],
