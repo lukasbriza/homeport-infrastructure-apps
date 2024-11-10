@@ -31,7 +31,7 @@ services:
     image: jenkins/jenkins:latest-jdk17
     depends_on:
       - dind 
-    user: jenkins
+    user: root
     restart: always
     networks:
       - docker
