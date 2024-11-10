@@ -7,8 +7,10 @@ name: jenkins-passbolt
 
 services:
   jenkins:
-    image:  jenkins/jenkins:latest-jdk17
     container_name: jenkins-controller
+    build:
+      context: .
+      dockerfile: apps/jenkins/Dockerfile
     env_file:
       - apps/jenkins/.env
     depends_on:

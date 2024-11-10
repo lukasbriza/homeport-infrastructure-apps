@@ -28,7 +28,9 @@ name: jenkins-passbolt
 services:
   jenkins:
     container_name: jenkins-controller
-    image: jenkins/jenkins:latest-jdk17
+    build:
+      context: .
+      dockerfile: apps/jenkins/Dockerfile
     depends_on:
       - dind 
     user: root
