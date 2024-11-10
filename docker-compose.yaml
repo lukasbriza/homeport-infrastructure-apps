@@ -71,7 +71,7 @@ services:
     networks:
       - docker
     ports:
-      - ${API_PROCESSOR_PORT}:3001
+      - ${API_PROCESSOR_PORT}:3002
     tty: true
     privileged: true
     logging:

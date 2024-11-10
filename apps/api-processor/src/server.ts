@@ -6,7 +6,7 @@ import { router } from './router'
 
 dotenv.config()
 const app = express()
-const PORT = process.env.API_PROCESSOR_PORT ?? 3001
+const PORT = 3002
 
 // ROUTES
 app.use(cookieParser())
