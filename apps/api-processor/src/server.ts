@@ -10,6 +10,7 @@ const PORT = 3002
 
 // ROUTES
 app.use(cookieParser())
+app.use(express.json())
 app.use('/api', router)
 
 app.use('/health', (_: Request, response: Response) => {

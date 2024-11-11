@@ -1,9 +1,9 @@
 import type { Response } from 'express'
 
 export const processRequestFailed = (error: unknown, response: Response) => {
-  // eslint-disable-next-line no-console
-  console.error(error)
   if (error instanceof Error) {
+    // eslint-disable-next-line no-console
+    console.error(error.message)
     response.status(400).json({ message: error.message }).send()
     return
   }

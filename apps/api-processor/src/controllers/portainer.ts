@@ -21,23 +21,15 @@ portainer.route('/stacks').get(async (_: Request, response: Response) => {
     })
     console.group()
     console.log('getStacksResponse:')
-    console.log(getStacksResponse)
+    console.log(getStacksResponse.data)
     console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
 
-    if (getStacksResponse.status !== 200) {
-      console.group()
-      console.log('getStacksResponse Error:')
-      console.log('Status:', getStacksResponse.status)
-      console.log(getStacksResponse)
-      console.log('-------------------------------------------------------------------------------------')
-      console.groupEnd()
-      throw new Error('Retrieving portainer stacks failed.')
-    }
-
     response.status(200).send(getStacksResponse.data)
   } catch (error) {
+    console.log('getStacksResponse Error:')
     processRequestFailed(error, response)
+    console.log('-------------------------------------------------------------------------------------')
   }
 })
 
@@ -58,23 +50,15 @@ portainer
       })
       console.group()
       console.log('deployStackResponse:')
-      console.log(deployStackResponse)
+      console.log(deployStackResponse.data)
       console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
 
-      if (deployStackResponse.status !== 200) {
-        console.group()
-        console.log('deployStackResponse Error:')
-        console.log('Status:', deployStackResponse.status)
-        console.log(deployStackResponse)
-        console.log('-------------------------------------------------------------------------------------')
-        console.groupEnd()
-        throw new Error('Deploying portainer stacks failed.')
-      }
-
       response.status(200).send(deployStackResponse.data)
     } catch (error) {
+      console.log('deployStackResponse Error:')
       processRequestFailed(error, response)
+      console.log('-------------------------------------------------------------------------------------')
     }
   })
   .put(redeployStackValidation, async (request: Request<never, never, RedeployStackBody>, response: Response) => {
@@ -92,23 +76,15 @@ portainer
       })
       console.group()
       console.log('redeployStackResponse:')
-      console.log(redeployStackResponse)
+      console.log(redeployStackResponse.data)
       console.log('-------------------------------------------------------------------------------------')
       console.groupEnd()
 
-      if (redeployStackResponse.status !== 200) {
-        console.group()
-        console.log('redeployStackResponse Error:')
-        console.log('Status:', redeployStackResponse.status)
-        console.log(redeployStackResponse)
-        console.log('-------------------------------------------------------------------------------------')
-        console.groupEnd()
-        throw new Error('Deploying portainer stacks failed.')
-      }
-
       response.status(200).send(redeployStackResponse.data)
     } catch (error) {
+      console.log('redeployStackResponse Error:')
       processRequestFailed(error, response)
+      console.log('-------------------------------------------------------------------------------------')
     }
   })
 
@@ -125,22 +101,14 @@ portainer.route('/endpoints').get(async (_: Request, response: Response) => {
     })
     console.group()
     console.log('getEndpointsResponse:')
-    console.log(getEndpointsResponse)
+    console.log(getEndpointsResponse.data)
     console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
 
-    if (getEndpointsResponse.status !== 200) {
-      console.group()
-      console.log('getEndpointsResponse Error:')
-      console.log('Status:', getEndpointsResponse.status)
-      console.log(getEndpointsResponse)
-      console.log('-------------------------------------------------------------------------------------')
-      console.groupEnd()
-      throw new Error('Retrieving portainer endpoints failed.')
-    }
-
     response.status(200).send(getEndpointsResponse.data)
   } catch (error) {
+    console.log('getEndpointsResponse Error:')
     processRequestFailed(error, response)
+    console.log('-------------------------------------------------------------------------------------')
   }
 })

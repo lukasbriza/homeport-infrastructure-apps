@@ -3,11 +3,7 @@ import { redeployStackSchema } from '../../schemas'
 
 export const redeployStackValidation = async (request: Request, response: Response, next: NextFunction) => {
   try {
-    const isValid = await redeployStackSchema.isValid(request.body)
-
-    if (!isValid) {
-      throw new Error('Request body validation failed.')
-    }
+    await redeployStackSchema.validate(request.body)
 
     next()
   } catch (error) {

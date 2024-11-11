@@ -21,21 +21,13 @@ export const authenticate = async (request: Request, response: Response, next: N
     const publicKeyResponse = await axios.get<{ body: PublicKeyResponse }>(getPublicKeyUrl)
     console.group()
     console.log('publicKeyResponse:')
-    console.log(publicKeyResponse)
+    console.log(publicKeyResponse.data)
     console.groupEnd()
-
-    if (publicKeyResponse.status !== 200) {
-      console.group()
-      console.log('publicKeyResponse Error:')
-      console.log('Status:', publicKeyResponse.status)
-      console.log(publicKeyResponse)
-      console.groupEnd()
-      throw new Error(`Obtaining passbolt server public key failed. URL: ${getPublicKeyUrl}`)
-    }
 
     const serverPublicKey: string = publicKeyResponse.data.body.keydata
 
     if (!serverPublicKey) {
+      console.log('Passbolt server public key was not obtained.')
       console.error(publicKeyResponse.data)
       throw new Error('Passbolt server public key was not obtained.')
     }
@@ -46,19 +38,9 @@ export const authenticate = async (request: Request, response: Response, next: N
     const login1stStageResponse = await axios.post(loginUrl, { data: { gpg_auth: { keyid: apiUserFingerprint } } })
     console.group()
     console.log('login1stStageResponse:')
-    console.log(login1stStageResponse)
+    console.log(login1stStageResponse.data)
     console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
-
-    if (login1stStageResponse.status !== 200) {
-      console.group()
-      console.log('login1stStageResponse Error:')
-      console.log('Status:', login1stStageResponse.status)
-      console.log(login1stStageResponse)
-      console.log('-------------------------------------------------------------------------------------')
-      console.groupEnd()
-      throw new Error('Passbolt login Stage1 failed.')
-    }
 
     if (
       !login1stStageResponse.headers['x-gpgauth-user-auth-token'] ||
@@ -86,7 +68,7 @@ export const authenticate = async (request: Request, response: Response, next: N
     })
     console.group()
     console.log('login2ndStageResponse:')
-    console.log(login2ndStageResponse)
+    console.log(login2ndStageResponse.data)
     console.log('-------------------------------------------------------------------------------------')
     console.groupEnd()
 
@@ -105,7 +87,9 @@ export const authenticate = async (request: Request, response: Response, next: N
     next()
   } catch (error) {
     if (error instanceof Error) {
+      console.log(error.message)
       response.status(400).json({ message: error.message }).send()
+      console.log('-------------------------------------------------------------------------------------')
       return
     }
     response

@@ -8,7 +8,7 @@ export type AddStackBody = {
   endpointId: number
   name: string
   repositoryURL: string
-  repositoryAuthentication: string
+  repositoryAuthentication: boolean
   repositoryUsername: string
   repositoryPassword: string
   repositoryReferenceName: string
