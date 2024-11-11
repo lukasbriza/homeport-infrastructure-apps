@@ -43,6 +43,7 @@ portainer
       const { endpointId, ...restBody } = request.body
 
       const deployStackResponse = await axios.post(url, restBody, {
+        timeout: 3_600_000,
         headers: {
           'X-API-KEY': process.env.PORTAINER_API_ACESS_TOKEN,
         },
@@ -69,6 +70,7 @@ portainer
       const { endpointId, stackId, ...restBody } = request.body
 
       const redeployStackResponse = await axios.put(url, restBody, {
+        timeout: 3_600_000,
         headers: {
           'X-API-KEY': process.env.PORTAINER_API_ACESS_TOKEN,
         },
