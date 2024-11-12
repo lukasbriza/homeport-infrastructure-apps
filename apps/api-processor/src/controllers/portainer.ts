@@ -42,6 +42,9 @@ portainer
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { endpointId, ...restBody } = request.body
 
+      console.log('requestBody:')
+      console.log(restBody)
+
       const deployStackResponse = await axios.post(url, restBody, {
         timeout: 3_600_000,
         headers: {
