@@ -2,6 +2,7 @@
 import type { Response } from 'express'
 
 export const processRequestFailed = (error: unknown, response: Response) => {
+  console.log(error)
   if (error instanceof Error) {
     console.error(error.message)
     console.error(error.cause)
