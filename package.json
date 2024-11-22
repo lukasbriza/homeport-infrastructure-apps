@@ -11,6 +11,10 @@
   ],
   "scripts": {
     "build": "turbo build",
+    "compose-project-local": "docker compose -f docker-compose-local.yaml build",
+    "compose-project-local-push": "docker compose -f docker-compose-local.yaml push",
+    "compose-project-prod": "docker compose -f docker-compose-prod.yaml build",
+    "compose-project-prod-push": "docker compose -f docker-compose-prod.yaml push",
     "cleanup": "turbo run cleanup --no-daemon",
     "postcleanup": "rimraf .eslintcache tsconfig.tsbuildinfo node_modules",
     "cli": "turbo build --filter @lukasbriza/cli & node ./packages/cli/dist/cli.js",

@@ -1,24 +1,4 @@
-# NEED TO DEFINE THIS VARIABLES IN .ENV #
-#########################################
-# - JENKINS_EXPOSE_PORT
-# - PASSBOLT_EXPOSE_PORT
-# - PASSBOLT_EXPOSE_HTTPS_PORT
-# - PASSBOLT_API
-# - PASSBOLT_API_USER_PASSPHRASE
-# - PASSBOLT_API_USER_FINGERPRINT
-# - PASSBOLT_API_USER_PRIVATE_KEY
-# - APP_FULL_BASE_URL
-# - EMAIL_TRANSPORT_DEFAULT_HOST
-# - EMAIL_TRANSPORT_DEFAULT_PORT
-# - EMAIL_TRANSPORT_DEFAULT_USERNAME
-# - EMAIL_TRANSPORT_DEFAULT_PASSWORD
-# - HOST_JENKINS_DATA_PATH
-# - HOST_JENKINS_CERTS_PATH
-# - HOST_JENKINS_HOME_PATH
-# - HOST_PASSBOLT_DATABASE_PATH
-# - HOST_PASSBOLT_GPG_PATH
-# - HOST_PASSBOLT_JWT_PATH
-# - API_PROCESSOR_PORT
+version: '3.8'
 
 networks:
   docker:
@@ -27,10 +7,13 @@ name: jenkins-passbolt
 
 services:
   jenkins:
-    container_name: jenkins-controller
     build:
       context: .
       dockerfile: apps/jenkins/Dockerfile
+    image: lbriza/homeport:jenkins-local
+    container_name: jenkins-controller
+    env_file:
+      - apps/jenkins/.env
     depends_on:
       - dind 
     user: root
@@ -38,7 +21,7 @@ services:
     networks:
       - docker
     ports:
-      - ${JENKINS_EXPOSE_PORT}:8080
+      - 8080:8080
       - 50000:50000
     tty: true
     privileged: true
@@ -50,37 +33,28 @@ services:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
-      - PASSBOLT_API=${PASSBOLT_API}
-      - PORTAINER_API=${PORTAINER_API}
-      - PASSBOLT_API_USER_FINGERPRINT=${PASSBOLT_API_USER_FINGERPRINT}
-      - PASSBOLT_API_USER_PASSPHRASE=${PASSBOLT_API_USER_PASSPHRASE}
-      - PASSBOLT_API_USER_PRIVATE_KEY=${PASSBOLT_API_USER_PRIVATE_KEY}
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    
+
   api-processor:
-    container_name: api-processor
     build:
       context: .
       dockerfile: apps/api-processor/Dockerfile
+    image: lbriza/homeport:api-processor-local
+    container_name: api-processor
+    env_file:
+      - apps/api-processor/.env
     user: root
     restart: always
     networks:
       - docker
     ports:
-      - ${API_PROCESSOR_PORT}:3002
+      - 3001:3001
     tty: true
     privileged: true
-    environment:
-      PASSBOLT_API_USER_PRIVATE_KEY: ${PASSBOLT_API_USER_PRIVATE_KEY}
-      PASSBOLT_API_USER_PASSPHRASE: ${PASSBOLT_API_USER_PASSPHRASE}
-      PASSBOLT_API_USER_FINGERPRINT: ${PASSBOLT_API_USER_FINGERPRINT}
-      PASSBOLT_API: ${PASSBOLT_API}
-      PORTAINER_API_ACESS_TOKEN: ${PORTAINER_API_ACESS_TOKEN}
-      PORTAINER_API: ${PORTAINER_API}
     logging:
       driver: "json-file"
       options:
@@ -133,19 +107,19 @@ services:
   passbolt:
     container_name: passbolt-app
     image: passbolt/passbolt:latest-ce
-    restart: always
+    restart: unless-stopped
     depends_on:
       - db
     environment:
-      APP_FULL_BASE_URL: ${APP_FULL_BASE_URL}
+      APP_FULL_BASE_URL: http://localhost:8080
       DATASOURCES_DEFAULT_HOST: db
       DATASOURCES_DEFAULT_USERNAME: passbolt
       DATASOURCES_DEFAULT_PASSWORD: P4ssb0lt
       DATASOURCES_DEFAULT_DATABASE: passbolt
-      EMAIL_TRANSPORT_DEFAULT_HOST: ${EMAIL_TRANSPORT_DEFAULT_HOST}
-      EMAIL_TRANSPORT_DEFAULT_PORT: ${EMAIL_TRANSPORT_DEFAULT_PORT}
-      EMAIL_TRANSPORT_DEFAULT_USERNAME: ${EMAIL_TRANSPORT_DEFAULT_USERNAME}
-      EMAIL_TRANSPORT_DEFAULT_PASSWORD: ${EMAIL_TRANSPORT_DEFAULT_PASSWORD}
+      EMAIL_TRANSPORT_DEFAULT_HOST: smtp.gmail.com
+      EMAIL_TRANSPORT_DEFAULT_PORT: 587
+      EMAIL_TRANSPORT_DEFAULT_USERNAME: name@gmail.com
+      EMAIL_TRANSPORT_DEFAULT_PASSWORD: emailpwd
     volumes:
       - passbolt_gpg_volume:/etc/passbolt/gpg
       - passbolt_jwt_volume:/etc/passbolt/jwt
@@ -159,8 +133,8 @@ services:
         "/docker-entrypoint.sh",
       ]
     ports:
-      - ${PASSBOLT_EXPOSE_PORT}:80
-      - ${PASSBOLT_EXPOSE_HTTPS_PORT}:443
+      - 1001:80
+      - 1002:443
     networks:
       - docker
     logging:
