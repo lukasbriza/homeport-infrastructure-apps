@@ -29,6 +29,7 @@ services:
       - jenkins_data_volume:/var/jenkins_home
       - jenkins_certs_volume:/certs/client:ro
       - jenkins_home_volume:/home
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
