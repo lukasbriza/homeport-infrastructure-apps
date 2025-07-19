@@ -1,0 +1,193 @@
+# VARIABLES DEFINED IN .ENV.LOCAL FILES #
+#########################################
+# - architecture/jenkins/.env.local
+# - architecture/infisical/.env.local
+# - architecture/api-processor/.env.local
+# - architecture/nginx-proxy-manager/.env.local
+#
+# To work with .env.local files you need to run `deployment-docker:build-local` or `deployment-docker:run-local`.
+
+networks:
+  architecture-local:
+  docker:
+  infisical-local:
+
+name: homeport-architecture-apps-local
+
+services:
+  #########################################
+  # JENKINS services
+  jenkins:
+    build:
+      context: .
+      dockerfile: architecture/jenkins/Dockerfile
+    container_name: jenkins-controller
+    env_file:
+      - architecture/jenkins/.env.local
+    depends_on:
+      - dind
+    user: root
+    restart: always
+    networks:
+      - architecture-local
+      - docker
+    ports:
+      - 8080:8080
+      - 50000:50000
+    tty: true
+    privileged: true
+    volumes:
+      - ${HOST_JENKINS_DATA_PATH}:/var/jenkins_home
+      - ${HOST_JENKINS_CERTS_PATH}:/certs/client:ro
+      - ${HOST_JENKINS_HOME_PATH}:/home
+      - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  dind:
+    build:
+      context: .
+      dockerfile: architecture/jenkins/Dockerfile.dind
+    container_name: jenkins-dind
+    env_file:
+      - architecture/jenkins/.env.local
+    privileged: true
+    restart: always
+    networks:
+      docker:
+        aliases:
+          - docker
+    ports:
+      - 2376:2376
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_DRIVER=overlay2
+    volumes:
+      - ${HOST_JENKINS_DATA_PATH}:/var/jenkins_home
+      - ${HOST_JENKINS_CERTS_PATH}:/certs/client
+      - ${HOST_JENKINS_HOME_PATH}:/home
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  #########################################
+  # INFISICAL services
+  infisical-backend:
+    build:
+      context: .
+      dockerfile: architecture/infisical/Dockerfile
+    container_name: infisical-backend
+    env_file:
+      - architecture/infisical/.env.local
+    restart: unless-stopped
+    networks:
+      - architecture-local
+      - infisical-local
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - ${INFISICAL_BACKEND_PORT_EXPORT}:8080
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  redis:
+    build:
+      context: .
+      dockerfile: architecture/infisical/Dockerfile.redis
+    container_name: infisical-redis
+    env_file:
+      - architecture/infisical/.env.local
+    restart: always
+    networks:
+      - infisical-local
+    ports:
+      - ${INFISICAL_REDIS_PORT_EXPORT}:6379
+    volumes:
+      - ${HOST_INFISICAL_REDIS_DATA_PATH}:/data
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  database:
+    container_name: infisical-database
+    image: postgres:14-alpine
+    restart: always
+    networks:
+      - infisical-local
+    env_file:
+      - architecture/infisical/.env.local
+    volumes:
+      - ${HOST_INFISICAL_DATABASE_DATA_PATH}:/var/lib/postgresql/data
+    healthcheck:
+      test: 'pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list'
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  #########################################
+  # SHARED
+  api-processor:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+      args:
+        - APP=api-processor
+        - APP_FOLDER=architecture
+        - TAG=base-latest
+        - PORT=3002
+    container_name: api-processor
+    env_file:
+      - architecture/api-processor/.env.local
+    user: root
+    restart: always
+    networks:
+      - architecture-local
+    dns:
+      - ${DNS_SERVER}
+    tty: true
+    privileged: true
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  nginx-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    env_file:
+      - architecture/nginx-proxy-manager/.env.local
+    container_name: nginx-proxy-manager
+    restart: always
+    ports:
+      # Public HTTP Port
+      - ${NGINX_HTTP_PORT}:80
+      # Public HTTPS Port
+      - ${NGINX_HTTPS_PORT}:443
+      # Admin Web Port
+      - ${NGINX_ADMIN_WEB_PORT}:81
+    volumes:
+      - ${HOST_NGINX_DATA_PATH}:/data
+      - ${HOST_NGINX_LETSENCRYPT_PATH}:/etc/letsencrypt
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'

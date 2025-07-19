@@ -1,28 +1,35 @@
 {
-  "name": "@lukasbriza/monorepo-template",
-  "version": "0.0.0",
+  "name": "@lukasbriza/homeport-infrastructure-apps",
+  "version": "1.0.0",
   "private": true,
-  "description": "Universal monorepo template for application from @lukasbriza",
+  "description": "Infrastructure apps for homeport home lab.",
   "author": "https://github.com/lukasbriza",
   "type": "module",
   "workspaces": [
     "./apps/*",
-    "./packages/*"
+    "./architecture/*",
+    "./packages/*",
+    "./core/*"
   ],
   "scripts": {
+    "architecture-docker:build-local": "dotenv -e architecture/jenkins/.env.local -e architecture/infisical/.env.local -e architecture/api-processor/.env.local -e architecture/nginx-proxy-manager/.env.local -- docker compose -f docker-compose-local.architecture.yaml build",
+    "architecture-docker:build-prod": "docker compose -f docker-compose-prod.architecture.yaml build",
+    "architecture-docker:push-prod": "docker compose -f docker-compose-prod.architecture.yaml push",
+    "architecture-docker:run-local": "dotenv -e architecture/jenkins/.env.local -e architecture/infisical/.env.local -e architecture/api-processor/.env.local -e architecture/nginx-proxy-manager/.env.local -- docker compose -f docker-compose-local.architecture.yaml up --build -V -d",
     "build": "turbo build",
-    "compose-project-local": "docker compose -f docker-compose-local.yaml build",
-    "compose-project-local-push": "docker compose -f docker-compose-local.yaml push",
-    "compose-project-prod": "docker compose -f docker-compose-prod.yaml build",
-    "compose-project-prod-push": "docker compose -f docker-compose-prod.yaml push",
-    "cleanup": "turbo run cleanup --no-daemon",
+    "cleanup": "turbo run cleanup --no-daemon && pnpm run postcleanup",
     "postcleanup": "rimraf .eslintcache tsconfig.tsbuildinfo node_modules",
     "cli": "turbo build --filter @lukasbriza/cli & node ./packages/cli/dist/cli.js",
-    "dev": "turbo dev",
+    "core-docker:build-local": "dotenv -e core/portainer/.env.local -e core/pi-hole/.env.local -- docker compose -f docker-compose-local.core.yaml --profile DNS build",
+    "core-docker:build-prod": "docker compose -f docker-compose-prod.core.yaml --profile DNS build",
+    "core-docker:push-prod": "docker compose -f docker-compose-prod.core.yaml --profile DNS push",
+    "core-docker:run-local": "dotenv -e core/portainer/.env.local -e core/pi-hole/.env.local -- docker compose -f docker-compose-local.core.yaml --profile DNS up --build -V -d",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint --no-daemon",
     "lint:fix": "turbo run lint:fix --no-daemon",
+    "prepare": "node scripts/husky-prepare.js",
     "prepare:husky": "husky",
+    "test": "turbo test",
     "ts": "turbo run ts --no-daemon"
   },
   "dependencies": {
@@ -44,6 +51,9 @@
     "turbo": "2.0.6",
     "typescript": "5.5.3",
     "typescript-eslint": "7.15.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "8.0.0"
   },
   "packageManager": "pnpm@9.4.0",
   "engines": {

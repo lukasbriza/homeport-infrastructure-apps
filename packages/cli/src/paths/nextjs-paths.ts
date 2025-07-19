@@ -7,3 +7,4 @@ const __dirname = path.dirname(__filename)
 
 export const eslintPath = path.normalize(`${__dirname}/../../files/next-js/esl`)
 export const tsConfigPath = path.normalize(`${__dirname}/../../files/next-js/tsc`)
+export const turboFilePath = path.normalize(`${__dirname}/../../files/nextjs/turbo`)

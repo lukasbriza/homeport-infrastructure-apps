@@ -1,0 +1,247 @@
+# NEED TO DEFINE THIS VARIABLES IN .ENV #
+#########################################
+#             Jenkins                   #
+#########################################
+# - JENKINS_EXPOSE_PORT
+#########################################
+#           Api-processor               #
+#########################################
+# - API_PROCESSOR_PORT
+# - INFISICAL_API
+# - INFISICAL_CLIENT_ID
+# - INFISICAL_CLIENT_SECRET
+# - PORTAINER_API_ACESS_TOKEN
+# - PORTAINER_API
+# - DNS_SERVER
+#########################################
+#                 DB                    #
+#########################################
+# - MYSQL_RANDOM_ROOT_PASSWORD (boolean)
+# - MYSQL_DATABASE
+# - MYSQL_USER
+# - MYSQL_PASSWORD
+#########################################
+#              Infisical                #
+#########################################
+# INFISICAL BACKEND
+# - NODE_ENV
+# - ENCRYPTION_KEY
+# - AUTH_SECRET
+# - POSTGRES_PASSWORD
+# - SITE_URL
+# - INFISICAL_BACKEND_PORT_EXPORT
+# REDIS
+# - HOST_INFISICAL_REDIS_DATA_PATH
+# - INFISICAL_REDIS_PORT_EXPORT
+# DATABASE
+# - HOST_INFISICAL_DATABASE_DATA_PATH
+#########################################
+#               NGINX                   #
+#########################################
+# - NGINX_HTTP_PORT
+# - NGINX_HTTPS_PORT
+# - NGINX_ADMIN_WEB_PORT
+#########################################
+#               Volumes                 #
+#########################################
+# - HOST_JENKINS_DATA_PATH
+# - HOST_JENKINS_CERTS_PATH
+# - HOST_JENKINS_HOME_PATH
+# - HOST_INFISICAL_REDIS_DATA_PATH
+# - HOST_INFISICAL_DATABASE_DATA_PATH
+# - HOST_NGINX_DATA_PATH
+# - HOST_NGINX_LETSENCRYPT_PATH
+
+networks:
+  architecture-prod:
+  docker:
+  infisical-prod:
+
+name: homeport-architecture-apps-prod
+
+services:
+  #########################################
+  # JENKINS services
+  jenkins:
+    build:
+      context: .
+      dockerfile: architecture/jenkins/Dockerfile
+    image: lbriza/homeport:jenkins-prod
+    container_name: jenkins-controller
+    depends_on:
+      - dind
+    user: root
+    restart: always
+    networks:
+      - architecture-prod
+      - docker
+    environment:
+      - API_PROCESSOR_API=${API_PROCESSOR_API}
+      - SEND_EMAIL_ADDRESS=${SEND_EMAIL_ADDRESS}
+    ports:
+      - ${JENKINS_EXPOSE_PORT}:8080
+      - 50000:50000
+    tty: true
+    privileged: true
+    volumes:
+      - ${HOST_JENKINS_DATA_PATH}:/var/jenkins_home
+      - ${HOST_JENKINS_CERTS_PATH}:/certs/client:ro
+      - ${HOST_JENKINS_HOME_PATH}:/home
+      - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  dind:
+    build:
+      context: .
+      dockerfile: architecture/jenkins/Dockerfile.dind
+    container_name: jenkins-dind
+    image: lbriza/homeport:dind-prod
+    privileged: true
+    restart: always
+    networks:
+      docker:
+        aliases:
+          - docker
+    ports:
+      - 2376:2376
+    volumes:
+      - ${HOST_JENKINS_DATA_PATH}:/var/jenkins_home
+      - ${HOST_JENKINS_CERTS_PATH}:/certs/client
+      - ${HOST_JENKINS_HOME_PATH}:/home
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  #########################################
+  # INFISICAL service
+  infisical-backend:
+    build:
+      context: .
+      dockerfile: architecture/infisical/Dockerfile
+    container_name: infisical-backend
+    image: lbriza/homeport:infisical-backend-prod
+    restart: unless-stopped
+    networks:
+      - architecture-prod
+      - infisical-prod
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=infisical
+      - POSTGRES_DB=infisical
+      - DB_CONNECTION_URI=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      - REDIS_URL=redis://redis:6379
+      - SITE_URL=${SITE_URL}
+    ports:
+      - ${INFISICAL_BACKEND_PORT_EXPORT}:8080
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  redis:
+    build:
+      context: .
+      dockerfile: architecture/infisical/Dockerfile.redis
+    container_name: infisical-redis
+    image: lbriza/homeport:infisical-redis-prod
+    restart: always
+    networks:
+      - infisical-prod
+    volumes:
+      - ${HOST_INFISICAL_REDIS_DATA_PATH}:/data
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  database:
+    container_name: infisical-database
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=infisical
+      - POSTGRES_USER=infisical
+    networks:
+      - infisical-prod
+    volumes:
+      - ${HOST_INFISICAL_DATABASE_DATA_PATH}:/var/lib/postgresql/data
+    healthcheck:
+      test: 'pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list'
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  #########################################
+  # SHARED
+  api-processor:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+      args:
+        - APP=api-processor
+        - APP_FOLDER=architecture
+        - TAG=base-latest
+        - PORT=3002
+    container_name: api-processor
+    image: lbriza/homeport:api-processor-prod
+    user: root
+    restart: always
+    networks:
+      - architecture-prod
+    dns:
+      - ${DNS_SERVER}
+    tty: true
+    privileged: true
+    environment:
+      - INFISICAL_API=${INFISICAL_API}
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - PORTAINER_API_ACESS_TOKEN=${PORTAINER_API_ACESS_TOKEN}
+      - PORTAINER_API=${PORTAINER_API}
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  nginx-manager:
+    container_name: nginx-proxy-manager
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: always
+    ports:
+      # Public HTTP Port
+      - ${NGINX_HTTP_PORT}:80
+      # Public HTTPS Port
+      - ${NGINX_HTTPS_PORT}:443
+      # Admin Web Port
+      - ${NGINX_ADMIN_WEB_PORT}:81
+    volumes:
+      - ${HOST_NGINX_DATA_PATH}:/data
+      - ${HOST_NGINX_LETSENCRYPT_PATH}:/etc/letsencrypt
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'

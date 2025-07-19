@@ -1,0 +1,15 @@
+services:
+  test-runner:
+    build:
+      context: ../../
+      dockerfile: docker/tests/Dockerfile
+      args:
+        - TAG=base-latest
+    container_name: test-runner
+
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+

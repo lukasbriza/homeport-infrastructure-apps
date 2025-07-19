@@ -3,3 +3,5 @@
 schema.graphql
 migrate-mongo-config.js
 /migrations
+/database
+lint-staged.config.mjs

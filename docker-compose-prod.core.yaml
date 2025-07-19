@@ -1,0 +1,60 @@
+# NEED TO DEFINE THIS VARIABLES IN .ENV #
+#########################################
+#             Portainer                 #
+#########################################
+# - HOST_PORTAINER_DATA_PATH
+# - HOST_PORTAINER_EXPOSE_PORT
+#########################################
+#              Pihole                   #
+#########################################
+# - FTLCONF_webserver_api_password
+# - HOST_PI_HOLE_DATA
+# - HOST_PI_HOLE_WEB_PORT
+
+networks:
+  core-prod:
+    driver: bridge
+
+name: homeport-core-prod
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer-prod
+    restart: always
+    networks:
+      - core-prod
+    ports:
+      - ${HOST_PORTAINER_EXPOSE_PORT}:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOST_PORTAINER_DATA_PATH}:/data
+
+  pi-hole:
+    image: pihole/pihole:latest
+    container_name: pi-hole-prod
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '${HOST_PI_HOLE_WEB_PORT}:80/tcp'
+      # Uncomment the below if using Pi-hole as your DHCP Server
+      #- "67:67/udp"
+    environment:
+      - TZ=Europe/London
+      - FTLCONF_dns_listeningMode=all
+      - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
+    restart: unless-stopped
+    networks:
+      - core-prod
+    profiles:
+      - DNS
+    volumes:
+      - '${HOST_PI_HOLE_DATA}:/etc/pihole'
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: 500M

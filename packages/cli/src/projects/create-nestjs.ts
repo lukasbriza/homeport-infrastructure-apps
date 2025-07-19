@@ -3,6 +3,7 @@ import { copyFileSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'n
 
 import ora from 'ora'
 
+import { APPS_PATH } from '../constants.js'
 import {
   eslintIgnorePath,
   eslintrcPath,
@@ -13,14 +14,15 @@ import {
   prettierignorePath,
   tsConfigBuildPath,
   tsConfigPath,
+  turboFilePath,
   vitestConfigPath,
 } from '../paths/nestjs-paths.js'
 import { PROJECT_TYPE } from '../types.js'
-import { APPS_PATH, createDirectory, cleanup, installDeps } from '../utils/index.js'
+import { createDirectory, cleanup, installDeps } from '../utils/index.js'
 
 export const createNestJs = (projectName: string) => {
   // CREATE NEST JS PROJECT WITH CLI
-  const createNestProjectSpinner = ora('Creating NestJs project...\n').start()
+  const createNestProjectSpinner = ora().start('Creating NestJs project...\n')
   try {
     execSync(`pnpm nest new ./apps/${projectName} --package-manager pnpm --language ts`, { cwd: APPS_PATH })
     createNestProjectSpinner.succeed()
@@ -31,8 +33,9 @@ export const createNestJs = (projectName: string) => {
   }
 
   // CLEAR NESTJS FILES
-  const clearFilesSpinner = ora('Clear NestJs files...\n').start()
+  const clearFilesSpinner = ora().start('Clear NestJs files...\n')
   try {
+    rmSync(`${APPS_PATH}/${projectName}/.git`, { recursive: true, force: true })
     unlinkSync(`${APPS_PATH}/${projectName}/tsconfig.build.json`)
     unlinkSync(`${APPS_PATH}/${projectName}/tsconfig.json`)
     unlinkSync(`${APPS_PATH}/${projectName}/.prettierrc`)
@@ -50,19 +53,20 @@ export const createNestJs = (projectName: string) => {
   }
 
   // COPY NEW FILES
-  const copyNewNestFilesSpinner = ora('Copy new NestJs files...\n').start()
+  const copyNewNestFilesSpinner = ora().start('Copy new NestJs files...\n')
   try {
     createDirectory(`${APPS_PATH}/${projectName}/test`)
     copyFileSync(eslintIgnorePath, `${APPS_PATH}/${projectName}/.eslintignore`)
     copyFileSync(eslintrcPath, `${APPS_PATH}/${projectName}/.eslintrc.cjs`)
     copyFileSync(gitignorePath, `${APPS_PATH}/${projectName}/.gitignore`)
     copyFileSync(prettierignorePath, `${APPS_PATH}/${projectName}/.prettierignore`)
-    copyFileSync(lintStagedPath, `${APPS_PATH}/${projectName}/lint-staged.config.js`)
+    copyFileSync(lintStagedPath, `${APPS_PATH}/${projectName}/lint-staged.config.mjs`)
     copyFileSync(packagePath, `${APPS_PATH}/${projectName}/package.json`)
     copyFileSync(tsConfigPath, `${APPS_PATH}/${projectName}/tsconfig.json`)
     copyFileSync(tsConfigBuildPath, `${APPS_PATH}/${projectName}/tsconfig.build.json`)
     copyFileSync(vitestConfigPath, `${APPS_PATH}/${projectName}/vitest.config.mjs`)
     copyFileSync(mainFileConfigPath, `${APPS_PATH}/${projectName}/src/main.ts`)
+    copyFileSync(turboFilePath, `${APPS_PATH}/${projectName}/turbo.json`)
 
     const file = readFileSync(`${APPS_PATH}/${projectName}/package.json`)
     const newValue = String(file).replace('@lukasbriza/nestjs', `@lukasbriza/${projectName}`)
@@ -91,8 +95,10 @@ export const createNestJs = (projectName: string) => {
   try {
     execSync('pnpm run lint --fix', { cwd: `${APPS_PATH}/${projectName}` })
     lintSpinner.succeed()
-  } catch {
+  } catch (error) {
     lintSpinner.fail()
+    // eslint-disable-next-line no-console
+    console.log(error)
     cleanup(projectName, PROJECT_TYPE.APP)
   }
 }

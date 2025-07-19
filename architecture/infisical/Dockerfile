@@ -1,0 +1,6 @@
+FROM infisical/infisical:v0.140.0-postgres
+
+ENV TELEMETRY_ENABLED=false
+ENV ALLOW_INTERNAL_IP_CONNECTIONS=true
+
+EXPOSE 8080 50000
