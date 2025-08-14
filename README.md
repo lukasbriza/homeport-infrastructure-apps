@@ -4,16 +4,16 @@ This repository is a **monorepo** that contains essential infrastructure service
 
 ## 🧭 Overview
 
-### Base infrastructure application
+### Core infrastructure application
 
-Applications that must be deployed manually via ssh connection to prepare enviroment for
-[deployment](### Deployment applications) and [network](### Network infrastructure application) applications.
+Applications that must be deployed manually via ssh connection to prepare enviroment for [architecture](#architecture-applications) applications.
 
 - **Portainer**: A lightweight management UI for Docker environments.
+- **Pihole**: (Optional) Opensource DNS and DHCP solution.
 
-### Deployment applications
+### Architecture applications
 
-Applications that should be deployed vie UI interface of [base](### Base infrastructure application) application.
+Applications that should be deployed vie UI interface of [Portainer](#core-infrastructure-application) application.
 
 - **Jenkins**: A highly customizable automation server for CI/CD, integrated with Passbolt and Portainer APIs via a custom `api-processor`.
 - **Infisical**: An open-source secrets manager.
@@ -21,12 +21,6 @@ Applications that should be deployed vie UI interface of [base](### Base infrast
 - **Docker-in-Docker (dind)**: Enables Jenkins to build Docker images within containers for fully isolated builds.
 - **API-processor**: Custom API driven apliccation that simplify Jenkins communication with Passbolt and Portainer
 - **NGINX**: HTTP proxy server with UI administration.
-
-### Network infrastructure application
-
-Oprional applications for network management. Should be deployed via automation of [deployment](### Deployment applications) applications.
-
-- **Pihole**:
 
 Both **local development** and **production deployment** environments are supported using dedicated Docker Compose files.
 
@@ -61,9 +55,8 @@ Run local compose file:
 HOST_JENKINS_DATA_PATH=<path_on_host>
 HOST_JENKINS_CERTS_PATH=<path_on_host>
 HOST_JENKINS_HOME_PATH=<path_on_host>
-HOST_PASSBOLT_DATABASE_PATH=<path_on_host>
-HOST_PASSBOLT_GPG_PATH=<path_on_host>
-HOST_PASSBOLT_JWT_PATH=<path_on_host>
+HOST_INFISICAL_DATABASE_DATA_PATH=<path_on_host>
+HOST_INFISICAL_REDIS_DATA_PATH=<path_on_host>
 HOST_PI_HOLE_DATA=<path_on_host>
 HOST_PORTAINER_DATA_PATH=<path_on_host>
 ```
@@ -112,6 +105,7 @@ DB_CONNECTION_URI=<postgres_database_url>
 REDIS_URL=<internal_redis_url>
 SITE_URL=<internal_url>
 INFISICAL_BACKEND_PORT_EXPORT=<web_port>
+INFISICAL_REDIS_PORT_EXPORT=<redis_port>
 ```
 
 #### 📑 Pi-hole
