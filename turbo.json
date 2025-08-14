@@ -7,57 +7,37 @@
     "PASSBOLT_API_USER_PRIVATE_KEY",
     "API_PROCESSOR_PORT",
     "PORTAINER_API",
-    "PORTAINER_API_ACESS_TOKEN"
+    "PORTAINER_API_ACESS_TOKEN",
+    "SSH_AUTH_SOCK",
+    "NODE_ENV"
   ],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**/*",
-        "tsconfig.tsbuildinfo",
-        "tsconfig.build.tsbuildinfo"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**/*", "tsconfig.tsbuildinfo", "tsconfig.build.tsbuildinfo"]
     },
     "lint": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".eslintcache"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": [".eslintcache"]
     },
     "lint:fix": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".eslintchache"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": [".eslintchache"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "ts": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "tsconfig.tsbuildinfo"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["tsconfig.tsbuildinfo"]
     },
     "tsc": {},
     "cleanup": {
       "cache": false
     },
     "run": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "cache": false
     }
   }

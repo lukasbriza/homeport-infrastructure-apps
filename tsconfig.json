@@ -3,13 +3,13 @@
   "compilerOptions": {
     "checkJs": true
   },
-  "include": [
+  "include": ["./*.ts"],
+  "exclude": [
+    "node_modules",
     ".eslintrc.cjs",
-    "./*.cjs",
-    "./*.js",
-    "./*.ts",
-    "commitlint.config.cjs",
+    "commitlint.config.js",
     "lint-staged.config.js",
-    "prettier.config.js"
+    "prettier.config.js",
+    "scripts"
   ]
 }

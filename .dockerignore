@@ -1,5 +1,12 @@
-/.rollup.cache
-/.turbo
-/build
-/node_modules
-/tsconfig.tsbuildinfo
+test
+node_modules
+**/node_modules
+.turbo
+.gitignore
+_avast_
+.git
+.next
+dist
+*.md
+out
+modules/prisma/generate/*

@@ -1,0 +1,6 @@
+FROM docker:28.3.2-dind-alpine3.22
+
+ENV DOCKER_TLS_CERTDIR=/certs
+ENV DOCKER_DRIVER=overlay2
+
+EXPOSE 2376

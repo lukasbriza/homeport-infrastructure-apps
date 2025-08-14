@@ -15,3 +15,4 @@ export const tsConfigPath = path.normalize(`${__dirname}/../../files/nestjs/tsc`
 export const tsConfigBuildPath = path.normalize(`${__dirname}/../../files/nestjs/tsc.build`)
 export const vitestConfigPath = path.normalize(`${__dirname}/../../files/nestjs/vitest.config`)
 export const mainFileConfigPath = path.normalize(`${__dirname}/../../files/nestjs/main.txt`)
+export const turboFilePath = path.normalize(`${__dirname}/../../files/nestjs/turbo`)
