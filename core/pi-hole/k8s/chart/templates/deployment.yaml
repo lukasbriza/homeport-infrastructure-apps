@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if .Values.infisical.enabled }}
+  annotations:
+    # Operator does a rolling restart of this Deployment whenever the managed
+    # secret (see infisical-static-secret.yaml) changes — no manual redeploy.
+    secrets.infisical.com/auto-reload: "true"
+  {{- end }}
+spec:
+  replicas: 1
+  # Node's network namespace, not hostPort — FTL always binds DNS on 53
+  # internally regardless of what's configured, so hostPort's iptables-based
+  # remap can't be trusted to route real LAN traffic to the right place, only
+  # a real bind can. Recreate: a second pod (old + new during a rollout)
+  # can't both bind the same host port at once, so tear the old one down first.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: pihole
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: TZ
+              value: {{ .Values.timezone | quote }}
+            - name: FTLCONF_dns_listeningMode
+              value: "all"
+            - name: FTLCONF_webserver_api_password
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: FTLCONF_webserver_api_password
+            # Format is mandatory (bare port numbers are silently ignored) —
+            # "<port>o" means plain HTTP on that port, both IPv4 and IPv6.
+            - name: FTLCONF_webserver_port
+              value: "{{ .Values.webPort }}o,[::]:{{ .Values.webPort }}o"
+          ports:
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: web
+              containerPort: {{ .Values.webPort }}
+              protocol: TCP
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "SYS_NICE"]
+          volumeMounts:
+            - name: data
+              mountPath: /etc/pihole
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-data

@@ -1,0 +1,15 @@
+# Copy to values-prod.yaml and fill in real values.
+#
+# adminToken is NOT used below — infisical.enabled: true means the webserver
+# password comes from your Homeport project instead. If you ever set
+# infisical.enabled back to false, uncomment this and set a real value:
+# adminToken: "replace-me"
+
+infisical:
+  enabled: true
+  authRef:
+    name: homeport-infisical-auth
+    namespace: infisical-system
+  projectId: "<project-id>"
+  environmentSlug: "prod"
+  secretPath: "/pi-hole"
