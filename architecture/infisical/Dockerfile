@@ -1,4 +1,4 @@
-FROM infisical/infisical:v0.162.13-postgres
+FROM infisical/infisical:v0.162.13
 
 ENV TELEMETRY_ENABLED=false
 ENV ALLOW_INTERNAL_IP_CONNECTIONS=true

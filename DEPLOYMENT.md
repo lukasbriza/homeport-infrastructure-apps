@@ -77,13 +77,13 @@ openssl rand -base64 32
 2. Build production cointainers:
 
    ```bash
-   pnpm run deployment-docker:build-prod
+   pnpm run architecture-docker:build-prod
    ```
 
 3. Push production images into homeport Docker registry:
 
    ```bash
-   pnpm run deployment-docker:push-prod
+   pnpm run architecture-docker:push-prod
    ```
 
 4. If it is your first deploy, configure new stack in Portainer (Github build method). Then add enviroment variables from your prepared `.env` file. Variables for `api-processor` need to be filled later, first you need to get necessary credentials from other applications to access them. If stack already exists just press `Pull and redeploy` with re-pulling of images.
