@@ -1,0 +1,6 @@
+apiVersion: v2
+name: infisical
+description: Self-hosted Infisical (backend + Postgres + Redis) for the homeport cluster
+type: application
+version: 0.1.0
+appVersion: "0.162.13"

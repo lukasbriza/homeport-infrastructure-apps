@@ -1,0 +1,7 @@
+# Copy to values-prod.yaml and fill in the real domain. Commit it — see the
+# note in values.yaml on why this is safe (no secrets live here).
+siteUrl: "https://<domain>"
+
+ingress:
+  enabled: true
+  host: "<domain>"

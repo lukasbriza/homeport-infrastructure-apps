@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cert-renewal-script
+  namespace: cert-renewal
+data:
+  renew-certs.sh: |
+    #!/bin/sh
+    set -eu
+
+    echo "== Bootstrapping tools =="
+    apk add --no-cache jq >/dev/null
+
+    export PATH="/root/.acme.sh:$PATH"
+    # neilpang/acme.sh hardcodes /acme.sh as its cert storage dir regardless of
+    # --home — the PVC is mounted there directly (see 04-cronjob.yaml) instead
+    # of fighting that default.
+    ACME_HOME=/acme.sh
+
+    # Idempotent — no-ops if an account is already registered for this state dir.
+    acme.sh --register-account -m "$WEDOS_Username" || true
+
+    echo "== Discovering domains from cluster Ingresses (tls blocks) =="
+    kubectl get ingress -A -o json \
+      | jq -r '.items[] | .metadata.namespace as $ns | (.spec.tls // [])[] | select(.hosts) | "\(.hosts[0])|\($ns)|\(.secretName)"' \
+      | sort -u > /tmp/domains.txt
+
+    if [ ! -s /tmp/domains.txt ]; then
+      echo "No Ingresses with a tls block found — nothing to do."
+      exit 0
+    fi
+
+    cat /tmp/domains.txt
+
+    # Wedos states DNS changes can take up to 60 minutes to actually propagate
+    # (this isn't acme.sh being slow — it's Wedos's own published SLA). Waiting
+    # that long per domain, serially, for up to 10 domains is not workable
+    # (potentially 10 hours). Each domain still gets its own independent
+    # certificate (no shared SAN cert), but the issuance processes run
+    # concurrently in the background so the wait is paid once in wall-clock
+    # time, not once per domain. Launches are staggered a few seconds apart so
+    # Wedos doesn't get 10 simultaneous writes to the same zone. Each process
+    # gets its own --config-home so they don't race on acme.sh's shared
+    # account state; certs still land in the shared, persistent $ACME_HOME.
+    mkdir -p /tmp/logs
+    rm -f /tmp/results.txt
+    PIDS=""
+    while IFS='|' read -r HOST NS SECRET; do
+      (
+        if acme.sh --issue --dns dns_wedos -d "$HOST" --server letsencrypt --dnssleep 3600 \
+          --cert-home "$ACME_HOME" --config-home "/tmp/acme-config/$HOST" \
+          > "/tmp/logs/$HOST.log" 2>&1; then
+          echo "OK:$HOST" >> /tmp/results.txt
+        else
+          echo "FAIL:$HOST" >> /tmp/results.txt
+        fi
+      ) &
+      PIDS="$PIDS $!"
+      sleep 5
+    done < /tmp/domains.txt
+
+    echo ""
+    echo "== Launched $(echo $PIDS | wc -w) parallel issuance processes, waiting for all to finish (up to ~60 min) =="
+    wait $PIDS
+
+    echo ""
+    echo "== Per-domain logs =="
+    for f in /tmp/logs/*.log; do
+      echo "--- $f ---"
+      cat "$f"
+    done
+
+    echo ""
+    echo "== Writing secrets for successful domains =="
+    while IFS='|' read -r HOST NS SECRET; do
+      if grep -qx "OK:$HOST" /tmp/results.txt 2>/dev/null; then
+        CERT_DIR="$ACME_HOME/${HOST}_ecc"
+        if [ -f "$CERT_DIR/fullchain.cer" ] && [ -f "$CERT_DIR/$HOST.key" ]; then
+          kubectl create secret tls "$SECRET" -n "$NS" \
+            --cert="$CERT_DIR/fullchain.cer" \
+            --key="$CERT_DIR/$HOST.key" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          echo "Secret $NS/$SECRET updated ($HOST)."
+        else
+          echo "!! $HOST reported OK but cert files weren't found at $CERT_DIR — check manually."
+        fi
+      else
+        echo "!! $HOST failed or wasn't due for renewal — see its log above."
+      fi
+    done < /tmp/domains.txt
+
+    echo ""
+    echo "== Done =="

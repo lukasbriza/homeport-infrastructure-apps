@@ -1,0 +1,34 @@
+# Safe defaults. Override with values-prod.yaml for the real domain — see
+# values-prod.example.yaml. Both files are committed (GitOps: ArgoCD reads
+# them straight from git); nothing in here is a secret. The real secrets
+# (ENCRYPTION_KEY, AUTH_SECRET, POSTGRES_PASSWORD) live in a Kubernetes Secret
+# created directly via `kubectl create secret` — see DEPLOYMENT.md — never in
+# a values file, because Infisical can't bootstrap its own encryption key from
+# itself.
+
+image:
+  backend:
+    repository: lbriza/homeport
+    tag: infisical-backend-a010be6
+  redis:
+    repository: lbriza/homeport
+    tag: infisical-redis-a010be6
+
+# Name of the Secret created via `kubectl create secret generic <name>` with
+# keys: ENCRYPTION_KEY, AUTH_SECRET, POSTGRES_PASSWORD.
+secretName: infisical-backend-secrets
+
+postgres:
+  image: postgres:14-alpine
+  storageClassName: local-path
+  storage: 5Gi
+
+redis:
+  storageClassName: local-path
+  storage: 1Gi
+
+siteUrl: "http://localhost:8080"
+
+ingress:
+  enabled: false
+  host: ""

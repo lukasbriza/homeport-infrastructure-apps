@@ -1,0 +1,33 @@
+# ArgoCD Application for Infisical (secrets manager backend + redis + postgres).
+#
+# Deliberately NOT auto-syncing — manual sync (`argocd app sync infisical` or
+# via the UI) until this is validated end to end. Once confirmed, add:
+#   syncPolicy:
+#     automated:
+#       prune: true
+#       selfHeal: true
+#
+# targetRevision points at feat/kubernetes-migration because that's the only
+# branch with these manifests right now. Update it once this work lands on
+# master (or whatever the long-term branch turns out to be).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infisical
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lukasbriza/homeport-infrastructure-apps.git
+    targetRevision: feat/kubernetes-migration
+    path: core/infisical/k8s/chart
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: infisical
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

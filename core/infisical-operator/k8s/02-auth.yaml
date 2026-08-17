@@ -1,0 +1,21 @@
+# No secret values in this file — it only references a Kubernetes Secret by name.
+# That Secret is created via `kubectl create secret` (see README step 3), never committed.
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalAuth
+metadata:
+  name: homeport-infisical-auth
+  namespace: infisical-system
+spec:
+  infisicalConnectionRef:
+    name: homeport-infisical
+    namespace: infisical-system
+  method: universal
+  universal:
+    clientIdRef:
+      name: infisical-universal-auth-credentials
+      namespace: infisical-system
+      key: clientId
+    clientSecretRef:
+      name: infisical-universal-auth-credentials
+      namespace: infisical-system
+      key: clientSecret

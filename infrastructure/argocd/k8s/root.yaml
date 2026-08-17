@@ -1,0 +1,31 @@
+# Root "app of apps" — watches infrastructure/argocd/k8s/applications/ and
+# creates/prunes the Application objects defined there automatically, so
+# adding a new app is just "add a YAML there, commit, push" instead of also
+# remembering a manual `kubectl apply`.
+#
+# Automated sync here only manages the Application CRs themselves (metadata),
+# not the workloads they point at — each child Application still has its own
+# syncPolicy, so actual deployments stay manual-sync until validated.
+#
+# Apply once manually: kubectl apply -f infrastructure/argocd/k8s/root.yaml
+# From then on, everything under applications/ is managed for you.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lukasbriza/homeport-infrastructure-apps.git
+    targetRevision: feat/kubernetes-migration
+    path: infrastructure/argocd/k8s/applications
+    directory:
+      recurse: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,53 @@
+# Issues/renews TLS certs for every Ingress with a `tls` block, across all
+# namespaces, via DNS-01 through Wedos (no port 80 needed — see DEPLOYMENT.md).
+# acme.sh only actually contacts Let's Encrypt for domains due for renewal,
+# using the state persisted on the acme-state PVC, so running this daily is safe.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cert-renewal
+  namespace: cert-renewal
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          serviceAccountName: cert-renewal
+          restartPolicy: Never
+          initContainers:
+            - name: fetch-kubectl
+              image: bitnami/kubectl:latest
+              command: ["sh", "-c", "cp $(which kubectl) /tools/kubectl"]
+              volumeMounts:
+                - name: tools
+                  mountPath: /tools
+          containers:
+            - name: renew
+              image: neilpang/acme.sh:latest
+              command: ["/bin/sh", "/scripts/renew-certs.sh"]
+              env:
+                - name: PATH
+                  value: "/tools:/root/.acme.sh:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              envFrom:
+                - secretRef:
+                    name: wedos-wapi-credentials
+              volumeMounts:
+                - name: tools
+                  mountPath: /tools
+                - name: script
+                  mountPath: /scripts
+                - name: acme-state
+                  mountPath: /acme.sh
+          volumes:
+            - name: tools
+              emptyDir: {}
+            - name: script
+              configMap:
+                name: cert-renewal-script
+                defaultMode: 0755
+            - name: acme-state
+              persistentVolumeClaim:
+                claimName: acme-state

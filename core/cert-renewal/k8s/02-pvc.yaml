@@ -1,0 +1,15 @@
+# Persists acme.sh's account key + per-domain state (~/.acme.sh) across CronJob
+# runs. Without this, every run would look like a fresh install and re-issue
+# every certificate from scratch instead of skipping ones that aren't due for
+# renewal yet — wasteful and risks hitting Let's Encrypt rate limits.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: acme-state
+  namespace: cert-renewal
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi

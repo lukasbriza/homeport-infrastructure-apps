@@ -1,134 +1,46 @@
-# Homeport architecture apps
+# Homeport infrastructure apps
 
-This repository is a **monorepo** that contains essential infrastructure services used in the **CI/CD process** of Homeport applications. It provides both local and production-ready Docker Compose configurations to streamline the deployment and management of DevOps tools.
+Infrastructure for Lukáš Bříza's homeport home lab: a single k3s cluster plus a
+couple of supporting pieces still on Docker.
 
-## 🧭 Overview
+## Structure
 
-### Core infrastructure application
+- `core/` — apps and cluster plumbing the environment can't function without:
+  - `pi-hole` — DNS
+  - `infisical` — secrets manager
+  - `infisical-operator` — syncs secrets from Infisical into the cluster
+  - `cert-renewal` — automatic TLS certificates (Wedos DNS-01)
+- `infrastructure/` — tools that add management or visibility value on top of
+  the cluster:
+  - `argocd` — GitOps, deploys apps from git automatically
+  - `headlamp` — cluster dashboard
+- `docker/` — shared Docker base images (Node, Next.js, Postgres, MongoDB),
+  not apps themselves.
+- `packages/` — shared workspace config (`eslint-config`, `prettier-config`,
+  `ts-config`).
 
-Applications that must be deployed manually via ssh connection to prepare enviroment for [architecture](#architecture-applications) applications.
+Each app under `core/` or `infrastructure/` colocates its Docker artifacts (if
+any) with its Kubernetes manifests, in a `k8s/` subfolder next to the
+Dockerfile.
 
-- **Portainer**: A lightweight management UI for Docker environments.
-- **Pihole**: (Optional) Opensource DNS and DHCP solution.
+Apps that belong to other repos (e.g. `vaultwarden` in
+`homeport-personal-apps`) are deployed onto this cluster via ArgoCD, but their
+code and charts live in their own repo, not here.
 
-### Architecture applications
+## Deployment
 
-Applications that should be deployed vie UI interface of [Portainer](#core-infrastructure-application) application.
+Almost everything here runs on k3s. See [DEPLOYMENT.md](DEPLOYMENT.md) for the
+full install order, from a clean server to a working cluster.
 
-- **Jenkins**: A highly customizable automation server for CI/CD, integrated with Passbolt and Portainer APIs via a custom `api-processor`.
-- **Infisical**: An open-source secrets manager.
-- **MariaDB**: A relational database used as backend for Passbolt.
-- **Docker-in-Docker (dind)**: Enables Jenkins to build Docker images within containers for fully isolated builds.
-- **API-processor**: Custom API driven apliccation that simplify Jenkins communication with Passbolt and Portainer
-- **NGINX**: HTTP proxy server with UI administration.
+## CI/CD
 
-Both **local development** and **production deployment** environments are supported using dedicated Docker Compose files.
+Apps with a custom Docker image (currently just Infisical) build and release
+through GitHub Actions, triggered by a version tag rather than every push —
+see [CONTRIBUTING.md](CONTRIBUTING.md#-releasing-app-images).
 
-## 📂 Structure
+## Documentation
 
-- `docker-compose-prod.yaml`: Production setup.
-- `docker-compose-local.yaml`: Local development and testing setup.
-- `apps/`: Contains individual services (e.g., Jenkins, api-processor).
-- `packages/`: Contains shared code across `apps`
-
-## ⚙️ Environments
-
-### 🔧 Local Development
-
-Build local compose file:
-
-```bash
-  pnpm run deployment-docker:build-local
-```
-
-Run local compose file:
-
-```bash
-  pnpm run deployment-docker:run-local
-```
-
-### 📋 Environment Variables
-
-#### 📂 Volumes
-
-```bash
-HOST_JENKINS_DATA_PATH=<path_on_host>
-HOST_JENKINS_CERTS_PATH=<path_on_host>
-HOST_JENKINS_HOME_PATH=<path_on_host>
-HOST_INFISICAL_DATABASE_DATA_PATH=<path_on_host>
-HOST_INFISICAL_REDIS_DATA_PATH=<path_on_host>
-HOST_PI_HOLE_DATA=<path_on_host>
-HOST_PORTAINER_DATA_PATH=<path_on_host>
-```
-
-#### 🛠️ Jenkins
-
-```bash
-JENKINS_EXPOSE_PORT=<port>
-PASSBOLT_API=<passbolt_api_url> - for internal usage of Jenkins scripts
-PORTAINER_API=<portainer_api_url> - for internal usage of Jenkins scripts
-PASSBOLT_API_USER_PASSPHRASE=<passphrase> - for API auth
-PASSBOLT_API_USER_FINGERPRINT=<fingerprint> - for API auth
-PASSBOLT_API_USER_PRIVATE_KEY=<private_key> - for API auth
-```
-
-### 💻 API processor
-
-```bash
-API_PROCESSOR_PORT=<port>
-INFISICAL_API=<url>
-INFISICAL_CLIENT_ID=<client_id>
-INFISICAL_CLIENT_SECRET=<client_secret>
-PORTAINER_API_ACESS_TOKEN=<token> - for API to access Portainer endpoints
-PORTAINER_API=<portainer_api_url>
-```
-
-#### 💽 DB
-
-```bash
-MYSQL_RANDOM_ROOT_PASSWORD=<boolean>
-MYSQL_DATABASE=<database_name>
-MYSQL_USER=<user_name>
-MYSQL_PASSWORD=<password>
-```
-
-#### 🔐 Infisical
-
-```bash
-NODE_ENV=<env>
-ENCRYPTION_KEY=<encryption_key>
-AUTH_SECRET=<secret>
-POSTGRES_PASSWORD=<password>
-POSTGRES_USER=<user_name>
-POSTGRES_DB=<db>
-DB_CONNECTION_URI=<postgres_database_url>
-REDIS_URL=<internal_redis_url>
-SITE_URL=<internal_url>
-INFISICAL_BACKEND_PORT_EXPORT=<web_port>
-INFISICAL_REDIS_PORT_EXPORT=<redis_port>
-```
-
-#### 📑 Pi-hole
-
-```bash
-FTLCONF_webserver_api_password=<dns_application_password>
-```
-
-#### ⚓ Portainer
-
-```bash
-PORTAINER_EXPOSE_PORT=<port>
-```
-
-#### 🔑 NGINX
-
-```bash
-NGINX_HTTP_PORT=<http_port>
-NGINX_HTTPS_PORT=<https_port>
-NGINX_ADMIN_WEB_PORT=<port>
-```
-
-## 📘 Additional Documentation
-
-- 🛠️ **Contributing**: Interested in contributing? Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and best practices.
-- 🚀 **Deployment**: For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+- 🛠️ **Contributing**: see [CONTRIBUTING.md](CONTRIBUTING.md) for repo
+  structure, testing, releasing images, and commit conventions.
+- 🚀 **Deployment**: see [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step
+  server setup.

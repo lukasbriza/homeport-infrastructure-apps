@@ -1,0 +1,46 @@
+# Safe defaults — equivalent of .env.local (committed, no secrets). Real/prod
+# values go in values-prod.yaml, gitignored only for the parts that are secrets;
+# see values-prod.example.yaml. Committed like the other charts otherwise —
+# nothing here is sensitive except adminToken, which stays empty by default.
+
+image:
+  repository: pihole/pihole
+  tag: latest
+
+timezone: Europe/London
+
+# Pod runs on the node's network namespace (hostNetwork) — DNS always binds
+# 53 (FTL doesn't support changing this). webPort is the only actually
+# adjustable port; keep it off 80/443, which usually belong to a reverse
+# proxy already running on the same node.
+webPort: 82
+
+persistence:
+  size: 500Mi
+  storageClassName: local-path
+
+# Never set a real password here. Empty by default so it's obvious if someone
+# forgets to pass -f values-prod.yaml.
+adminToken: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# When enabled, the admin webserver password comes from Infisical (via the
+# Infisical Kubernetes Operator) instead of the adminToken value above.
+# Requires the cluster-wide InfisicalConnection + InfisicalAuth to already be
+# applied — see homeport-architecture-apps/DEPLOYMENT.md, "Setup Infisical
+# Kubernetes Operator".
+infisical:
+  enabled: false
+  authRef:
+    name: homeport-infisical-auth
+    namespace: infisical-system
+  projectId: ""
+  environmentSlug: "prod"
+  secretPath: "/pi-hole"

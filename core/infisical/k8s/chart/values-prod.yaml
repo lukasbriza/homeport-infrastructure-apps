@@ -1,0 +1,7 @@
+# Real domain — committed, see the note in values.yaml on why this is safe
+# (no secrets live here).
+siteUrl: "https://infisical.lukasbriza.eu"
+
+ingress:
+  enabled: true
+  host: "infisical.lukasbriza.eu"
