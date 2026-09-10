@@ -1,0 +1,14 @@
+# Safe default — no ingress exposed. Override with values-prod.yaml (gitignored,
+# see values-prod.example.yaml) for the real domain.
+#
+# TLS terminates at the Traefik Ingress using a cert from core/cert-renewal/, so
+# argocd-server itself serves plain HTTP internally (server.insecure). Without
+# this, Traefik's plain-HTTP backend request hits ArgoCD's own self-signed
+# HTTPS listener and the connection breaks.
+configs:
+  params:
+    server.insecure: true
+
+server:
+  ingress:
+    enabled: false

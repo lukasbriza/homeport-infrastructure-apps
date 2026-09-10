@@ -1,0 +1,9 @@
+# Cluster-wide, shared by every InfisicalAuth (and transitively every app's
+# InfisicalStaticSecret). Create once, reference everywhere.
+apiVersion: secrets.infisical.com/v1beta1
+kind: InfisicalConnection
+metadata:
+  name: homeport-infisical
+  namespace: infisical-system
+spec:
+  address: "https://infisical.lukasbriza.eu"

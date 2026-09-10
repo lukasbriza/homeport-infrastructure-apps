@@ -1,9 +1,8 @@
 # VARIABLES DEFINED IN .ENV.LOCAL FILES #
 #########################################
 # - core/pi-hole/.env.local
-# - core/portainer/.env.local
 #
-# To work with .env.local files you need to run `dns-docker:build-local` or `dns-docker:run-local`.
+# To work with .env.local files you need to run `core-docker:build-local` or `core-docker:run-local`.
 
 networks:
   core-local:
@@ -12,20 +11,6 @@ networks:
 name: homeport-core-local
 
 services:
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer-local
-    env_file:
-      - ./core/portainer/.env.local
-    restart: always
-    networks:
-      - core-local
-    ports:
-      - 9000:9000
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${HOST_PORTAINER_DATA_PATH}:/data
-
   pi-hole:
     image: pihole/pihole:latest
     container_name: pi-hole-local

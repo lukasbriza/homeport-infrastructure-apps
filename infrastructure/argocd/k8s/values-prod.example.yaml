@@ -1,0 +1,12 @@
+# Copy to values-prod.yaml (gitignored) and fill in the real domain.
+global:
+  domain: "<domain>"
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    extraTls:
+      - hosts:
+          - "<domain>"
+        secretName: argocd-tls

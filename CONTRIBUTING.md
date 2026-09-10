@@ -2,20 +2,16 @@
 
 ## 📦 Repository Structure & Tooling
 
-This repository includes a suite of universal Dockerfiles and a custom CLI tool designed to streamline development and deployment.
+This repo has two top-level folders for apps, split by what they're for:
 
-To launch the CLI, run the following command from the root of the repository:
+- `core/` — apps and cluster plumbing the environment can't function without
+  (DNS, secrets manager, secret-sync operator, TLS renewal).
+- `infrastructure/` — tools that add management or visibility value on top of a
+  working cluster (GitOps, dashboards).
 
-```bash
-pnpm run cli
-```
-
-With this CLI, you can:
-
-- Fetch the latest Dockerfiles from the inherited repository
-- Update the CLI tool itself
-
-Please ensure you're working with the latest version of both before committing updates.
+Each app folder colocates its Docker artifacts (if any) with its Kubernetes
+manifests, in a `k8s/` subfolder next to the Dockerfile. See `DEPLOYMENT.md` for
+how to actually install and run everything on a server.
 
 ---
 
@@ -29,13 +25,30 @@ All applications and packages **must be covered by tests**, as long as it makes 
 
 ## 🚀 Deployment Structure
 
-Deployment is configured using two distinct Docker Compose files:
+Almost everything here runs on **Kubernetes (k3s)**. Each app's manifests live
+in its own `k8s/` folder under `core/` or `infrastructure/` — there's no single
+shared compose file for these. See `DEPLOYMENT.md` for the install order and
+commands.
 
-- `docker-compose-local.yaml` - for local testing without need of exhausting .env configuration
-- `docker-compose-test.yaml` – for testing and QA environments
-- `docker-compose-prod.yaml` – for production deployments
+`docker-compose-local.core.yaml` still exists for local testing of apps before
+they're deployed to k3s (currently just Pi-hole).
 
-Ensure your changes support both environments or clearly specify if they are intended for only one.
+---
+
+## 🏷️ Releasing app images
+
+Apps with a custom Docker image (e.g. Infisical) don't rebuild on every push.
+Pushing a version tag for that app triggers the build:
+
+```bash
+git tag <app>-v<version>   # e.g. infisical-v1.2.3
+git push origin <app>-v<version>
+```
+
+This builds the image, pushes it to Docker Hub, and commits the new tag into
+that app's `values.yaml` — ArgoCD picks it up from there. See
+`.github/workflows/infisical-build-push.yml` for a working example, and
+`DEPLOYMENT.md` for the full loop.
 
 ---
 
@@ -46,8 +59,8 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0
 **Examples:**
 
 ```
-feat(cli): add update command for Dockerfiles
-fix(api): resolve crash when fetching empty payload
+feat(k3s): add headlamp dashboard
+fix(infisical): correct ingress TLS secret name
 chore(deps): upgrade pnpm to latest version
 ```
 

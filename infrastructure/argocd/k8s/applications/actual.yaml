@@ -1,0 +1,31 @@
+# ArgoCD Application for actual (homeport-personal-apps repo). Auto-sync is
+# on — the manual-sync validation period is done (deployed, data migrated via
+# rsync, verified live on budgetmanager.lukasbriza.eu with real budget data).
+#
+# targetRevision points at feat/kubernetes-migration because that's the only
+# branch with these manifests right now. Update it once this work lands on
+# master (or whatever the long-term branch turns out to be).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: actual
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
+    targetRevision: feat/kubernetes-migration
+    path: apps/actual/k8s/chart
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: actual
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

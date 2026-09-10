@@ -1,0 +1,8 @@
+# Safe defaults — no ingress exposed. Override with values-prod.yaml (gitignored,
+# see values-prod.example.yaml) for the real domain.
+ingress:
+  enabled: false
+  ingressClassName: traefik
+  annotations: {}
+  hosts: []
+  tls: []

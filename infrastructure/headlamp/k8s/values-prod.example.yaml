@@ -1,0 +1,13 @@
+# Copy to values-prod.yaml (gitignored) and fill in the real domain.
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - host: "<domain>"
+      paths:
+        - path: /
+          type: ImplementationSpecific
+  tls:
+    - secretName: headlamp-tls
+      hosts:
+        - "<domain>"
