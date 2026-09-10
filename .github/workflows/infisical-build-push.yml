@@ -5,11 +5,6 @@
 #
 # Triggered by a version tag (infisical-v1.2.3), not by every push to the
 # Dockerfile — creating the tag is the deliberate "release this" moment.
-#
-# NOTE: the tracked branch below is feat/kubernetes-migration to match where
-# this work currently lives. Update it to master (or whatever the long-term
-# branch is) once this lands there — see the ArgoCD Application's
-# targetRevision too.
 name: Build and push Infisical images
 
 on:
@@ -64,17 +59,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # A tag checkout leaves us in detached HEAD — switch to the branch
           # ArgoCD actually tracks before committing the bump.
-          git fetch origin feat/kubernetes-migration
-          git checkout feat/kubernetes-migration
+          git fetch origin master
+          git checkout master
           git add core/infisical/k8s/chart/values.yaml
           git diff --cached --quiet && echo "No changes to commit" || git commit -m "chore: bump infisical images to v${{ steps.vars.outputs.version }}"
           # Branch may have moved since checkout (someone pushing manually
           # mid-build) — rebase onto the latest before pushing, retrying a
           # couple times in case of a tight race.
           for i in 1 2 3; do
-            git push origin feat/kubernetes-migration && break
+            git push origin master && break
             echo "push rejected, rebasing onto latest and retrying ($i/3)"
-            git fetch origin feat/kubernetes-migration
-            git rebase origin/feat/kubernetes-migration
+            git fetch origin master
+            git rebase origin/master
             sleep 2
           done
