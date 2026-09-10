@@ -18,7 +18,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/lukasbriza/homeport-infrastructure-apps.git
-    targetRevision: feat/kubernetes-migration
+    targetRevision: master
     path: infrastructure/argocd/k8s/applications
     directory:
       recurse: false

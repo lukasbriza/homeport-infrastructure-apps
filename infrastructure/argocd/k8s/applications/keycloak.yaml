@@ -2,10 +2,6 @@
 # on — the manual-sync validation period is done (deployed, Postgres data
 # migrated via pg_dump/pg_restore, verified live on auth.lukasbriza.eu with
 # real realm/user data).
-#
-# targetRevision points at feat/kubernetes-migration because that's the only
-# branch with these manifests right now. Update it once this work lands on
-# master (or whatever the long-term branch turns out to be).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -15,7 +11,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
-    targetRevision: feat/kubernetes-migration
+    targetRevision: master
     path: apps/keycloak/k8s/chart
     helm:
       valueFiles:

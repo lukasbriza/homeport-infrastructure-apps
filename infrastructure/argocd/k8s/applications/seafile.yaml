@@ -2,10 +2,6 @@
 # on — the manual-sync validation period is done (deployed, MariaDB data
 # migrated via mysqldump/mysql restore, files migrated via rsync, verified
 # live on seafile.lukasbriza.eu with real libraries).
-#
-# targetRevision points at feat/kubernetes-migration because that's the only
-# branch with these manifests right now. Update it once this work lands on
-# master (or whatever the long-term branch turns out to be).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -15,7 +11,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
-    targetRevision: feat/kubernetes-migration
+    targetRevision: master
     path: apps/seafile/k8s/chart
     helm:
       valueFiles:

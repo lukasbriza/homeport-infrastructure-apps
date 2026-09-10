@@ -6,10 +6,6 @@
 #     automated:
 #       prune: true
 #       selfHeal: true
-#
-# targetRevision points at feat/kubernetes-migration because that's the only
-# branch with these manifests right now. Update it once this work lands on
-# master (or whatever the long-term branch turns out to be).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -19,7 +15,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
-    targetRevision: feat/kubernetes-migration
+    targetRevision: master
     path: apps/vaultwarden/k8s/chart
     helm:
       valueFiles:
