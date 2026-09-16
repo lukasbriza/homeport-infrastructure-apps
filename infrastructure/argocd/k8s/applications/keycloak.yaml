@@ -1,7 +1,9 @@
-# ArgoCD Application for keycloak (homeport-personal-apps repo). Auto-sync is
-# on — the manual-sync validation period is done (deployed, Postgres data
-# migrated via pg_dump/pg_restore, verified live on auth.lukasbriza.eu with
-# real realm/user data).
+# ArgoCD Application for keycloak (homeport-personal-apps repo). Deploys only on
+# a tag push (keycloak-v*) — the same tag that triggers
+# .github/workflows/keycloak-build-push.yml, which builds+pushes the image,
+# bumps values.yaml, and (as its last step) runs `argocd app sync`.
+# Auto-sync/self-heal are intentionally off so nothing deploys except through
+# that release tag.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -21,8 +23,5 @@ spec:
     server: https://kubernetes.default.svc
     namespace: keycloak
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true

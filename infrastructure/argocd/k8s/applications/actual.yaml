@@ -1,6 +1,8 @@
-# ArgoCD Application for actual (homeport-personal-apps repo). Auto-sync is
-# on — the manual-sync validation period is done (deployed, data migrated via
-# rsync, verified live on budgetmanager.lukasbriza.eu with real budget data).
+# ArgoCD Application for actual (homeport-personal-apps repo). Deploys only on a
+# tag push (actual-v*) — the same tag that triggers
+# .github/workflows/actual-build-push.yml, which builds+pushes the image, bumps
+# values.yaml, and (as its last step) runs `argocd app sync`. Auto-sync/self-heal
+# are intentionally off so nothing deploys except through that release tag.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -20,8 +22,5 @@ spec:
     server: https://kubernetes.default.svc
     namespace: actual
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
