@@ -1,0 +1,26 @@
+# Own Ingress for headlamp's scale-to-zero setup — the upstream headlamp/headlamp
+# chart's own `ingress.*` values (see values-prod.example.yaml) are turned off in
+# favor of this, because routing to the KEDA interceptor instead of straight to
+# the app can't be expressed through that chart's values. Replace <domain> below
+# with the real hostname before applying.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: headlamp-scale-to-zero
+  namespace: headlamp
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: ["<domain>"]
+      secretName: headlamp-tls
+  rules:
+    - host: "<domain>"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: headlamp-keda-proxy
+                port:
+                  number: 8080

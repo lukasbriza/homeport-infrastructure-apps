@@ -10,9 +10,11 @@ certificates, GitOps, and a cluster dashboard.
 
 The repo has two folders for k3s apps:
 
-- `core/` — things the cluster can't work without: DNS (`pi-hole`), the secrets
-  manager (`infisical`), the operator that syncs secrets into the cluster
-  (`infisical-operator`), and automatic TLS certificates (`cert-renewal`).
+- `core/` — things the cluster can't work without, plus optional cluster-wide
+  capabilities apps opt into: DNS (`pi-hole`), the secrets manager (`infisical`),
+  the operator that syncs secrets into the cluster (`infisical-operator`),
+  automatic TLS certificates (`cert-renewal`), and opt-in HTTP scale-to-zero
+  (`keda`).
 - `infrastructure/` — tools that make the cluster easier to manage: GitOps
   (`argocd`) and a cluster dashboard (`headlamp`).
 
@@ -315,6 +317,87 @@ A web UI for the cluster itself — see pods, logs, and restart things without t
    ```bash
    kubectl port-forward -n headlamp service/headlamp <local-port>:80
    ```
+
+### Scale-to-zero for Headlamp (optional)
+
+Headlamp isn't a chart owned by this repo, so it can't use the `scaleToZero.*`
+values pattern the way apps in `homeport-personal-apps` do (see "Opting an app
+into scale-to-zero" below) — its Ingress comes from the upstream chart's own
+`ingress.*` values instead of a template here. Requires KEDA + the HTTP Add-on
+already installed (step 10, below).
+
+1. In `infrastructure/headlamp/k8s/values-prod.yaml`, set `ingress.enabled: false`
+   — the manifests below replace it with an Ingress that routes through the KEDA
+   interceptor instead, then `helm upgrade` with that file.
+
+2. Edit `infrastructure/headlamp/k8s/05-ingress.yaml` and `07-scaletozero.yaml`,
+   replacing `<domain>` with the same hostname you were using in `ingress.*`.
+
+3. Apply:
+
+   ```bash
+   kubectl apply -f infrastructure/headlamp/k8s/05-ingress.yaml \
+     -f infrastructure/headlamp/k8s/06-keda-proxy.yaml \
+     -f infrastructure/headlamp/k8s/07-scaletozero.yaml
+   ```
+
+## 10. Install KEDA (optional, HTTP scale-to-zero for low-traffic apps)
+
+Lets specific apps scale down to 0 replicas when idle and wake back up on the next
+request, instead of running 24/7. Skip this if every app should just stay up all
+the time — it's opt-in per app, not a cluster-wide default.
+
+1. Install KEDA itself, then its HTTP Add-on:
+
+   ```bash
+   helm repo add kedacore https://kedacore.github.io/charts
+   helm repo update
+   helm install keda kedacore/keda -n keda --create-namespace
+   helm install keda-add-ons-http kedacore/keda-add-ons-http -n keda \
+     -f core/keda/k8s/http-add-on-values.yaml
+   kubectl get pods -n keda
+   ```
+
+2. Verify the interceptor and scaler services exist:
+
+   ```bash
+   kubectl get svc -n keda
+   ```
+
+   You should see `keda-add-ons-http-interceptor-proxy` and
+   `keda-add-ons-http-external-scaler` — every scale-to-zero app's Ingress and
+   `ScaledObject` reference these by name.
+
+That's it for the cluster-wide install — nothing here is specific to any one app.
+
+### Opting an app into scale-to-zero
+
+Per-app config lives in that app's own Helm chart (`scaleToZero.*` in `values.yaml`),
+not here. See `apps/wishlist/k8s/chart` in `homeport-personal-apps` for a working
+reference — copy its `templates/keda-proxy.yaml` and `templates/scaletozero.yaml`,
+and the `{{- if .Values.scaleToZero.enabled }}` branch in `templates/ingress.yaml`,
+into the target app's chart, then set `scaleToZero.enabled: true` in its
+`values-prod.yaml` once you've confirmed it wakes up correctly.
+
+The short version of how it works: a standard `Ingress` backend can't point at a
+Service in another namespace, so an `ExternalName` Service in the app's own
+namespace resolves to the interceptor proxy in `keda`; the Ingress routes there
+instead of straight to the app when `scaleToZero.enabled` is true. An
+`InterceptorRoute` + `ScaledObject` pair (KEDA HTTP Add-on's current API — the
+older single `HTTPScaledObject` CRD is deprecated) tells KEDA which Deployment to
+scale and how many requests/second justify waking it up. The interceptor holds the
+first request while the pod starts, then forwards it — expect a multi-second delay
+on that first request after idling, which is why this isn't a good fit for
+something you expect to open instantly (vaultwarden) or that holds long-lived
+connections that never look idle (donetick's SSE-based realtime features).
+
+Not a good fit for `keycloak` either — other apps authenticate against it, and its
+own startup (Postgres migrations) is slow enough that scaling it to zero would
+likely break logins elsewhere while it wakes up.
+
+This is a fast-moving KEDA API (`InterceptorRoute` replaced `HTTPScaledObject` only
+recently) — pin the chart version you install rather than tracking `latest`, and
+recheck the HTTP Add-on's docs before copying the pattern to a new app.
 
 ---
 

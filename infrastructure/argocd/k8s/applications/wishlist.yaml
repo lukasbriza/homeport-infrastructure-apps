@@ -1,0 +1,28 @@
+# ArgoCD Application for wishlist (homeport-personal-apps repo). Deliberately NOT
+# auto-syncing yet — sync manually (`argocd app sync wishlist` or via the UI) until
+# the flow is validated. Once confirmed, add:
+#   syncPolicy:
+#     automated:
+#       prune: true
+#       selfHeal: true
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wishlist
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
+    targetRevision: master
+    path: apps/wishlist/k8s/chart
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: wishlist
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

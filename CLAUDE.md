@@ -14,9 +14,10 @@ own root-level JS/config files; they're not backing any real app.
 
 ## Repository structure
 
-- `core/` — plumbing the cluster can't function without: DNS (`pi-hole`), the secrets
-  manager (`infisical`), the secret-sync operator (`infisical-operator`), TLS renewal
-  (`cert-renewal`).
+- `core/` — plumbing the cluster depends on, plus optional cluster-wide capabilities
+  apps opt into: DNS (`pi-hole`), the secrets manager (`infisical`), the secret-sync
+  operator (`infisical-operator`), TLS renewal (`cert-renewal`), opt-in HTTP
+  scale-to-zero (`keda`).
 - `infrastructure/` — tools that add management/visibility value: GitOps (`argocd`),
   the cluster dashboard (`headlamp`).
 - Each app folder colocates its Docker artifacts (if any) with a `k8s/` subfolder

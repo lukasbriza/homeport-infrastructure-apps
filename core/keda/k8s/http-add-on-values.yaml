@@ -1,0 +1,7 @@
+# Homelab-scale override for kedacore/keda-add-ons-http — the chart's own defaults
+# (interceptor min 3 / max 50 replicas) are sized for a real multi-node cluster.
+# This is a single-node k3s box; a couple of interceptor pods is plenty.
+interceptor:
+  replicas:
+    min: 1
+    max: 3
