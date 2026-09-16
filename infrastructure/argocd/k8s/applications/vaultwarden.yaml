@@ -1,11 +1,9 @@
-# ArgoCD Application for vaultwarden (homeport-personal-apps repo). Deliberately NOT
-# auto-syncing yet — this is the first GitOps-managed app, so sync manually
-# (`argocd app sync vaultwarden` or via the UI) until the flow is validated.
-# Once confirmed, add:
-#   syncPolicy:
-#     automated:
-#       prune: true
-#       selfHeal: true
+# ArgoCD Application for vaultwarden (homeport-personal-apps repo). Deploys only
+# on a tag push (vaultwarden-v*) — see .github/workflows/vaultwarden-deploy.yml,
+# which triggers `argocd app sync`. vaultwarden has no build step of its own (runs
+# the upstream vaultwarden/server image directly), so the tag carries no version —
+# it's purely the "deploy now" signal. Auto-sync/self-heal are intentionally off
+# so nothing deploys except on that trigger.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

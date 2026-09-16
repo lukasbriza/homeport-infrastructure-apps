@@ -1,6 +1,9 @@
-# ArgoCD Application for homer (homeport-personal-apps repo). Auto-sync is on —
-# the manual-sync validation period is done (deployed, data migrated, verified
-# live on lukasbriza.eu).
+# ArgoCD Application for homer (homeport-personal-apps repo). Deploys only on a
+# tag push (homer-v*) — see .github/workflows/homer-deploy.yml, which triggers
+# `argocd app sync`. homer has no build step of its own (runs the upstream
+# b4bz/homer image directly), so the tag carries no version — it's purely the
+# "deploy now" signal. Auto-sync/self-heal are intentionally off so nothing
+# deploys except on that trigger.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -20,8 +23,5 @@ spec:
     server: https://kubernetes.default.svc
     namespace: homer
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true

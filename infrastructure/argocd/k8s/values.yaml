@@ -8,6 +8,10 @@
 configs:
   params:
     server.insecure: true
+  # Without this, the built-in admin account can't generate API tokens (UI or
+  # CLI) — it fails with "account 'admin' does not have apiKey capability".
+  cm:
+    accounts.admin: apiKey,login
 
 server:
   ingress:
