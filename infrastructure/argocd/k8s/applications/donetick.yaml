@@ -1,10 +1,4 @@
-# ArgoCD Application for donetick (homeport-personal-apps repo). Deliberately NOT
-# auto-syncing yet — sync manually (`argocd app sync donetick` or via the UI) until
-# the flow is validated. Once confirmed, add:
-#   syncPolicy:
-#     automated:
-#       prune: true
-#       selfHeal: true
+# ArgoCD Application for donetick (homeport-personal-apps repo). Auto-sync is on.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -24,5 +18,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: donetick
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
