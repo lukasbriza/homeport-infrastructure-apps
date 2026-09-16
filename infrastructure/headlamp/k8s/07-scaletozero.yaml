@@ -12,8 +12,12 @@ spec:
   target:
     service: headlamp
     port: 80
+  # A rule without `paths` only matches the literal root ("/"), not the app as
+  # a whole — the explicit "/" prefix below is required to cover every path.
   rules:
     - hosts: ["<domain>"]
+      paths:
+        - value: /
   scalingMetric:
     requestRate:
       targetValue: 5
