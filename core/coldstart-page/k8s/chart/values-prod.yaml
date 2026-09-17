@@ -7,3 +7,11 @@ namespaces:
   - donetick
   - wishlist
   - headlamp
+
+appNames:
+  actual: Actual Budget
+  homer: Homer
+  seafile: Seafile
+  donetick: Donetick
+  wishlist: Wishlist
+  headlamp: Headlamp

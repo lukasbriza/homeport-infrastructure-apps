@@ -11,3 +11,9 @@
 # scaleToZero.enabled in that app's own chart — otherwise its InterceptorRoute
 # points at a ConfigMap that was never created.
 namespaces: []
+
+# Namespace -> display name shown on the page (replaces the {APP_NAME}
+# placeholder in index.html at render time — see templates/configmap.yaml). A
+# namespace missing here still gets a ConfigMap, just with the generic
+# "Aplikace" fallback.
+appNames: {}

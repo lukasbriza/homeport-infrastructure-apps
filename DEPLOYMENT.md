@@ -367,7 +367,16 @@ the time — it's opt-in per app, not a cluster-wide default.
    chart rather than in each app, but KEDA requires the ConfigMap it renders to sit
    in the *same namespace* as the `InterceptorRoute` using it — so the chart
    renders one copy per namespace listed in its `values-prod.yaml`, not one shared
-   resource:
+   resource.
+
+   The page itself is a plain, standalone file —
+   `core/coldstart-page/k8s/chart/files/index.html` — with no Helm syntax in it, so
+   you can open it directly in a browser, or run `pnpm dev` in
+   `core/coldstart-page` for a live-reloading preview at `http://localhost:5500`
+   (works inside the `docker:dev` container too — see `docker/dev/docker-compose.yaml`)
+   to design/test it. `templates/configmap.yaml` reads that file's contents at render time via Helm's
+   `.Files.Get`, so editing the HTML and re-running `helm upgrade` (step below) is
+   the whole workflow — no need to touch the ConfigMap template itself:
 
    ```bash
    helm install coldstart-page core/coldstart-page/k8s/chart \
