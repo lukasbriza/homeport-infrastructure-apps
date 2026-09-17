@@ -1,0 +1,23 @@
+# Lets the built-in k3s Traefik route through an ExternalName Service — needed
+# because every app's scale-to-zero setup (see homeport-personal-apps,
+# templates/keda-proxy.yaml) fronts its Ingress with an ExternalName Service
+# that resolves to the KEDA HTTP Add-on's interceptor in the keda namespace.
+# Traefik refuses ExternalName backends by default
+# (providers.kubernetesIngress.allowExternalNameServices=false) and silently
+# drops the router for any Ingress using one — the symptom is Traefik's own
+# 404 ("no matching router"), even though the Ingress, Service and
+# InterceptorRoute all look correct.
+#
+# k3s manages its bundled Traefik via its own helm-controller, which watches
+# HelmChartConfig objects named/namespaced to match the HelmChart it patches —
+# this isn't a Helm values file you pass with -f, it's applied directly:
+#   kubectl apply -f core/traefik/k8s/00-helmchartconfig.yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--providers.kubernetesingress.allowexternalnameservices=true"

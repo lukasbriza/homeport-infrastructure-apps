@@ -2,7 +2,7 @@
 # into scale-to-zero". Targets the Deployment/Service the upstream
 # headlamp/headlamp chart creates (named "headlamp", matching the Helm release
 # name it's installed under). Requires KEDA + the HTTP Add-on already installed
-# (core/keda). Replace <domain> below with the same host used in 05-ingress.yaml.
+# (core/keda). Replace <domain> below with the same host used in 00-ingress.yaml.
 apiVersion: http.keda.sh/v1beta1
 kind: InterceptorRoute
 metadata:
@@ -18,6 +18,18 @@ spec:
     - hosts: ["<domain>"]
       paths:
         - value: /
+  # Shown to users while this pod is cold-starting instead of a bare "no
+  # endpoints" error. The ConfigMap itself is rendered by core/coldstart-page
+  # in this same repo — headlamp just needs to be listed in that chart's
+  # values-prod.yaml, or this reference resolves to nothing.
+  coldStart:
+    placeholder:
+      response:
+        bodyFromConfigMap:
+          name: coldstart-page
+          key: index.html
+        headers:
+          Refresh: "3"
   scalingMetric:
     requestRate:
       targetValue: 5

@@ -318,29 +318,6 @@ A web UI for the cluster itself — see pods, logs, and restart things without t
    kubectl port-forward -n headlamp service/headlamp <local-port>:80
    ```
 
-### Scale-to-zero for Headlamp (optional)
-
-Headlamp isn't a chart owned by this repo, so it can't use the `scaleToZero.*`
-values pattern the way apps in `homeport-personal-apps` do (see "Opting an app
-into scale-to-zero" below) — its Ingress comes from the upstream chart's own
-`ingress.*` values instead of a template here. Requires KEDA + the HTTP Add-on
-already installed (step 10, below).
-
-1. In `infrastructure/headlamp/k8s/values-prod.yaml`, set `ingress.enabled: false`
-   — the manifests below replace it with an Ingress that routes through the KEDA
-   interceptor instead, then `helm upgrade` with that file.
-
-2. Edit `infrastructure/headlamp/k8s/05-ingress.yaml` and `07-scaletozero.yaml`,
-   replacing `<domain>` with the same hostname you were using in `ingress.*`.
-
-3. Apply:
-
-   ```bash
-   kubectl apply -f infrastructure/headlamp/k8s/05-ingress.yaml \
-     -f infrastructure/headlamp/k8s/06-keda-proxy.yaml \
-     -f infrastructure/headlamp/k8s/07-scaletozero.yaml
-   ```
-
 ## 10. Install KEDA (optional, HTTP scale-to-zero for low-traffic apps)
 
 Lets specific apps scale down to 0 replicas when idle and wake back up on the next
@@ -368,6 +345,47 @@ the time — it's opt-in per app, not a cluster-wide default.
    `keda-add-ons-http-external-scaler` — every scale-to-zero app's Ingress and
    `ScaledObject` reference these by name.
 
+3. Let Traefik route to that interceptor. Every scale-to-zero app's Ingress backend
+   is an `ExternalName` Service (see "Opting an app into scale-to-zero" below), and
+   Traefik refuses those by default — the symptom is Traefik's own 404 ("no
+   matching router"), even though the Ingress, Service and `InterceptorRoute` all
+   look correct. Apply this once for the whole cluster:
+
+   ```bash
+   kubectl apply -f core/traefik/k8s/00-helmchartconfig.yaml
+   kubectl get pods -n kube-system | grep traefik
+   ```
+
+   k3s's own helm-controller picks up that `HelmChartConfig` and restarts Traefik
+   with `--providers.kubernetesingress.allowexternalnameservices=true` — watch for
+   a new `traefik-...` pod to come up.
+
+4. Install the shared cold-start page. Every scale-to-zero app's `InterceptorRoute`
+   shows this instead of a bare "no endpoints" error while its pod wakes up — a
+   spinner that auto-refreshes every 3 seconds and switches to the real app once
+   it's ready. It lives in this repo (`core/coldstart-page`) as its own small Helm
+   chart rather than in each app, but KEDA requires the ConfigMap it renders to sit
+   in the *same namespace* as the `InterceptorRoute` using it — so the chart
+   renders one copy per namespace listed in its `values-prod.yaml`, not one shared
+   resource:
+
+   ```bash
+   helm install coldstart-page core/coldstart-page/k8s/chart \
+     -n coldstart-page --create-namespace \
+     -f core/coldstart-page/k8s/chart/values.yaml \
+     -f core/coldstart-page/k8s/chart/values-prod.yaml
+   kubectl get configmap coldstart-page -n wishlist
+   ```
+
+   The `-n coldstart-page` namespace only holds the Helm release metadata — it
+   isn't where the ConfigMaps end up, so it doesn't need to match any app. To add
+   the page to a new app, list its namespace in
+   `core/coldstart-page/k8s/chart/values-prod.yaml` and `helm upgrade` this
+   release; the app's own `scaletozero.yaml` already points at it as long as it has
+   the `coldStart.placeholder.response.bodyFromConfigMap` block (see
+   `apps/wishlist/k8s/chart/templates/scaletozero.yaml` in
+   `homeport-personal-apps` for reference).
+
 That's it for the cluster-wide install — nothing here is specific to any one app.
 
 ### Opting an app into scale-to-zero
@@ -378,6 +396,11 @@ reference — copy its `templates/keda-proxy.yaml` and `templates/scaletozero.ya
 and the `{{- if .Values.scaleToZero.enabled }}` branch in `templates/ingress.yaml`,
 into the target app's chart, then set `scaleToZero.enabled: true` in its
 `values-prod.yaml` once you've confirmed it wakes up correctly.
+
+Also add the app's namespace to `core/coldstart-page/k8s/chart/values-prod.yaml`
+and `helm upgrade` that release (step 4 above) — otherwise the app's
+`InterceptorRoute` points at a `coldstart-page` ConfigMap that was never created
+in its namespace, and KEDA falls back to its plain default placeholder.
 
 The short version of how it works: a standard `Ingress` backend can't point at a
 Service in another namespace, so an `ExternalName` Service in the app's own
