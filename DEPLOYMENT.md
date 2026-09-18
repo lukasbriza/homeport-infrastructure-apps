@@ -290,9 +290,13 @@ gets a login-token Secret the same way any local chart would, with no separate
 
 1. Copy `infrastructure/headlamp/k8s/chart/values-prod.example.yaml` to
    `infrastructure/headlamp/k8s/chart/values-prod.yaml` and fill in your domain (or
-   leave `ingress.enabled: false` to keep it internal-only). Commit and push — the
-   root Application picks up `infrastructure/argocd/k8s/applications/headlamp.yaml`
-   on its own (see "Adding a new app to ArgoCD" above).
+   leave `ingress.enabled: false` to keep it internal-only). **Commit this file** —
+   ArgoCD's repo-server only ever reads from git, never from an uncommitted local
+   file on the k3s host, so unlike a manual `helm install` flow this one can't stay
+   gitignored (same convention as `apps/*/k8s/chart/values-prod.yaml` — nothing in
+   it is a secret). Push — the root Application picks up
+   `infrastructure/argocd/k8s/applications/headlamp.yaml` on its own (see "Adding a
+   new app to ArgoCD" above).
 
 2. Sync it:
 

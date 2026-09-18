@@ -1,4 +1,8 @@
-# Copy to values-prod.yaml (gitignored) and fill in the real domain.
+# Copy to values-prod.yaml and fill in the real domain, then commit it (also
+# committed, same as every other app's values-prod.yaml in this repo) — ArgoCD's
+# repo-server only ever reads from git, so this can't stay local-only the way the
+# old, manually-`helm install`-ed headlamp setup's values.yaml did. Nothing in it
+# is a secret; real credentials come from Infisical.
 ingress:
   enabled: true
   host: "<domain>"

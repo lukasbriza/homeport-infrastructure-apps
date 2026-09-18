@@ -1,7 +1,7 @@
 # One ConfigMap gets rendered per namespace listed here, holding the HTML page
 # KEDA's HTTP Add-on serves (via each app's own InterceptorRoute — see
 # homeport-personal-apps apps/*/k8s/chart/templates/scaletozero.yaml, and this
-# repo's infrastructure/headlamp/k8s/02-scaletozero.yaml) while that app
+# repo's infrastructure/headlamp/k8s/chart/templates/scaletozero.yaml) while that app
 # cold-starts from zero. KEDA requires the ConfigMap to live in the same
 # namespace as the app it's for, which is why this is one chart rendering many
 # copies rather than a single shared resource.
