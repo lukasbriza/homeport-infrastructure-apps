@@ -1,0 +1,14 @@
+# The upstream headlamp/headlamp subchart already creates a ServiceAccount +
+# ClusterRoleBinding (cluster-admin) by default (headlamp.serviceAccount.create
+# / headlamp.clusterRoleBinding.create in the subchart's own values — true
+# unless overridden in this chart's values.yaml). This just adds a long-lived
+# token Secret for that chart-managed ServiceAccount, since modern Kubernetes
+# no longer auto-creates these Secrets — needed to log into the Headlamp UI.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-admin-token
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/service-account.name: {{ .Release.Name }}
+type: kubernetes.io/service-account-token

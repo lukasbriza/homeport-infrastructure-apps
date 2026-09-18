@@ -19,7 +19,8 @@ own root-level JS/config files; they're not backing any real app.
   operator (`infisical-operator`), TLS renewal (`cert-renewal`), opt-in HTTP
   scale-to-zero (`keda`), the shared cold-start page (`coldstart-page`).
 - `infrastructure/` — tools that add management/visibility value: GitOps (`argocd`),
-  the cluster dashboard (`headlamp`).
+  the cluster dashboard (`headlamp`, a local chart wrapping the upstream
+  `headlamp/headlamp` chart as a Helm dependency, ArgoCD-managed like any app).
 - Each app folder colocates its Docker artifacts (if any) with a `k8s/` subfolder
   holding its Kubernetes manifests — a full local Helm chart, or just
   `values.yaml`/`values-prod.yaml` for an upstream chart.

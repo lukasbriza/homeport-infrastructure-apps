@@ -1,0 +1,43 @@
+{{- if .Values.ingress.enabled }}
+# This chart's own Ingress — the upstream headlamp/headlamp chart's own
+# ingress.* values are turned off (headlamp.ingress.enabled: false in
+# values.yaml) in favor of this, because routing to the KEDA interceptor
+# instead of straight to the app can't be expressed through that chart's
+# values.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [{{ .Values.ingress.host | quote }}]
+      secretName: {{ .Release.Name }}-tls
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                {{- if .Values.scaleToZero.enabled }}
+                # Routes through the KEDA HTTP Add-on interceptor instead of
+                # straight to this app's own Service — see keda-proxy.yaml.
+                # It holds the request, wakes the app via the
+                # InterceptorRoute/ScaledObject pair in scaletozero.yaml, then
+                # forwards it once the pod is ready.
+                name: {{ .Release.Name }}-keda-proxy
+                port:
+                  number: 8080
+                {{- else }}
+                # The upstream headlamp/headlamp subchart's own Service —
+                # named after this release since the release name ("headlamp")
+                # already matches the subchart name (its fullname helper
+                # doesn't append the chart name again in that case).
+                name: {{ .Release.Name }}
+                port:
+                  number: 80
+                {{- end }}
+{{- end }}

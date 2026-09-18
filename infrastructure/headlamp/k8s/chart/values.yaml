@@ -1,0 +1,32 @@
+# Safe defaults — equivalent of .env.local (committed, no secrets). Real/prod values
+# go in values-prod.yaml — see values-prod.example.yaml.
+#
+# Everything under `headlamp:` is passed straight through to the upstream
+# kubernetes-sigs/headlamp chart — this chart's only dependency, pinned in
+# Chart.yaml. `serviceAccount.create` / `clusterRoleBinding.create` default to
+# true there already (see templates/admin-token.yaml), so they're not repeated here.
+headlamp:
+  # This chart's own templates/ingress.yaml replaces the upstream chart's —
+  # needed because routing through the KEDA interceptor for scale-to-zero can't
+  # be expressed through the upstream chart's own ingress.* values. Always off.
+  ingress:
+    enabled: false
+
+ingress:
+  enabled: false
+  host: ""
+
+# Scale-to-zero via KEDA's HTTP Add-on — see this repo's DEPLOYMENT.md,
+# "Opting an app into scale-to-zero". Requires KEDA + the HTTP Add-on already
+# installed (core/keda). Off by default — flip to true only after confirming
+# the cluster-wide install works, and only once "headlamp" is listed in
+# core/coldstart-page/k8s/chart/values-prod.yaml.
+scaleToZero:
+  enabled: false
+  minReplicas: 0
+  maxReplicas: 1
+  # How long with no matching requests before scaling back down to 0.
+  cooldownPeriod: 300
+  # Requests/second (averaged over the window below) that justifies scaling up.
+  targetRequestRate: 5
+  window: 1m

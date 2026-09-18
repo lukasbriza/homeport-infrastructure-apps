@@ -282,36 +282,39 @@ syncPolicy:
 ## 9. Install Headlamp (optional cluster dashboard)
 
 A web UI for the cluster itself — see pods, logs, and restart things without typing
-`kubectl` commands.
+`kubectl` commands. Deployed through ArgoCD like every other app (needs step 8
+already done) — `infrastructure/headlamp/k8s/chart` wraps the upstream
+`headlamp/headlamp` chart as a Helm dependency, so it opts into scale-to-zero and
+gets a login-token Secret the same way any local chart would, with no separate
+`helm install`/`upgrade` routine of its own.
 
-1. Add the Helm repo:
+1. Copy `infrastructure/headlamp/k8s/chart/values-prod.example.yaml` to
+   `infrastructure/headlamp/k8s/chart/values-prod.yaml` and fill in your domain (or
+   leave `ingress.enabled: false` to keep it internal-only). Commit and push — the
+   root Application picks up `infrastructure/argocd/k8s/applications/headlamp.yaml`
+   on its own (see "Adding a new app to ArgoCD" above).
+
+2. Sync it:
 
    ```bash
-   helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
-   helm repo update
-   ```
-
-2. Copy `infrastructure/headlamp/k8s/values-prod.example.yaml` to
-   `infrastructure/headlamp/k8s/values-prod.yaml` and fill in your domain (or leave
-   `ingress.enabled: false` to keep it internal-only).
-
-3. Install:
-
-   ```bash
-   helm install headlamp headlamp/headlamp -n headlamp --create-namespace \
-     -f infrastructure/headlamp/k8s/values-prod.yaml
+   argocd app sync headlamp
    kubectl get pods -n headlamp
    ```
 
-4. Create a login token:
+   ArgoCD resolves the chart's upstream dependency itself at sync time — nothing to
+   pre-fetch on the server. (Only needed for a local `helm template`/`helm install`
+   run against this chart outside ArgoCD:
+   `helm dependency update infrastructure/headlamp/k8s/chart`.)
+
+3. Get the login token — `templates/admin-token.yaml` only declares the Secret's
+   *shape*; Kubernetes fills in the real token asynchronously once ArgoCD creates it:
 
    ```bash
-   kubectl apply -f infrastructure/headlamp/k8s/admin-token.yaml
    kubectl get secret headlamp-admin-token -n headlamp \
      -o jsonpath='{.data.token}' | base64 -d
    ```
 
-5. Open Headlamp and log in with that token — either through your domain, or
+4. Open Headlamp and log in with that token — either through your domain, or
    locally with:
 
    ```bash
@@ -404,7 +407,11 @@ not here. See `apps/wishlist/k8s/chart` in `homeport-personal-apps` for a workin
 reference — copy its `templates/keda-proxy.yaml` and `templates/scaletozero.yaml`,
 and the `{{- if .Values.scaleToZero.enabled }}` branch in `templates/ingress.yaml`,
 into the target app's chart, then set `scaleToZero.enabled: true` in its
-`values-prod.yaml` once you've confirmed it wakes up correctly.
+`values-prod.yaml` once you've confirmed it wakes up correctly. For an app that
+wraps an upstream chart as a dependency instead of having its own Deployment (like
+`headlamp` — see below), the same three templates work unchanged: `target`/
+`scaleTargetRef` just need to name the release itself, since the subchart's own
+resources are already named after the release.
 
 Also add the app's namespace to `core/coldstart-page/k8s/chart/values-prod.yaml`
 and `helm upgrade` that release (step 4 above) — otherwise the app's
@@ -430,6 +437,19 @@ likely break logins elsewhere while it wakes up.
 This is a fast-moving KEDA API (`InterceptorRoute` replaced `HTTPScaledObject` only
 recently) — pin the chart version you install rather than tracking `latest`, and
 recheck the HTTP Add-on's docs before copying the pattern to a new app.
+
+### Wrapping an upstream Helm chart instead of writing your own
+
+`infrastructure/headlamp/k8s/chart` is the reference for this: a `Chart.yaml` with a
+pinned `dependencies:` entry (repo URL + exact version, never a floating range) makes
+the upstream chart a subchart, whose own values move under a top-level key named
+after it (`headlamp:` in `values.yaml`). Anything the upstream chart's own values
+can't express — here, routing through the KEDA interceptor — becomes your own
+`templates/*.yaml` instead, using `.Release.Name`/`.Release.Namespace` to line up
+with the subchart's resources (safe whenever the release name already matches the
+chart name, since Helm's usual `fullname` helper doesn't append the chart name
+again in that case). This is what makes an otherwise-manual `helm install` app
+ArgoCD-manageable like any other app in this repo.
 
 ---
 

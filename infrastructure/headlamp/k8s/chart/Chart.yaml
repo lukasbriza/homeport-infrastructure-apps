@@ -1,0 +1,12 @@
+apiVersion: v2
+name: headlamp
+description: Headlamp (cluster dashboard) for homeport — wraps the upstream chart as
+  a dependency so it can opt into scale-to-zero and be managed by ArgoCD like every
+  other app in this repo, instead of a separate manual `helm install`.
+type: application
+version: 0.1.0
+appVersion: "0.45.0"
+dependencies:
+  - name: headlamp
+    version: "0.45.0"
+    repository: https://kubernetes-sigs.github.io/headlamp/

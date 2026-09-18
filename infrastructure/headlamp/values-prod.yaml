@@ -1,0 +1,3 @@
+ingress:
+  enabled: true
+  host: "k3s.lukasbriza.eu"

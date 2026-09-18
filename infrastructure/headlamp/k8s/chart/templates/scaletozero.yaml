@@ -1,0 +1,60 @@
+{{- if .Values.scaleToZero.enabled }}
+# Tells the interceptor which requests belong to this app and what metric to
+# report back to KEDA. Current KEDA HTTP Add-on API (InterceptorRoute +
+# ScaledObject) — the older single HTTPScaledObject CRD is deprecated.
+apiVersion: http.keda.sh/v1beta1
+kind: InterceptorRoute
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  target:
+    # The upstream headlamp/headlamp subchart's own Service/Deployment —
+    # named after this release (see ingress.yaml's comment on why).
+    service: {{ .Release.Name }}
+    port: 80
+  # A rule without `paths` only matches the literal root ("/"), not the app as
+  # a whole — the explicit "/" prefix below is required to cover every path.
+  rules:
+    - hosts: [{{ .Values.ingress.host | quote }}]
+      paths:
+        - value: /
+  scalingMetric:
+    requestRate:
+      targetValue: {{ .Values.scaleToZero.targetRequestRate }}
+      window: {{ .Values.scaleToZero.window }}
+      granularity: 1s
+  # Shown to users while this pod is cold-starting instead of a bare "no
+  # endpoints" error. The ConfigMap itself is rendered by core/coldstart-page
+  # in this same repo — headlamp just needs to be listed in that chart's
+  # values-prod.yaml, or this reference resolves to nothing.
+  coldStart:
+    placeholder:
+      response:
+        bodyFromConfigMap:
+          name: coldstart-page
+          key: index.html
+        headers:
+          Refresh: "3"
+---
+# The actual autoscaler — scales the upstream subchart's Deployment (same name
+# as the Release, per ingress.yaml's comment) between 0 and maxReplicas based
+# on the request rate the interceptor reports via the HTTP Add-on's external
+# scaler.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    name: {{ .Release.Name }}
+  minReplicaCount: {{ .Values.scaleToZero.minReplicas }}
+  maxReplicaCount: {{ .Values.scaleToZero.maxReplicas }}
+  cooldownPeriod: {{ .Values.scaleToZero.cooldownPeriod }}
+  triggers:
+    - type: external-push
+      metadata:
+        scalerAddress: keda-add-ons-http-external-scaler.keda:9090
+        interceptorRoute: {{ .Release.Name }}
+{{- end }}
