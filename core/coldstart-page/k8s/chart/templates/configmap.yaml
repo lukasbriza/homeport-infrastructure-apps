@@ -1,0 +1,29 @@
+# Rendered once per namespace in .Values.namespaces — see values.yaml for why
+# this can't just be a single shared ConfigMap. The
+# "http.keda.sh/response-body: true" label is required by the KEDA HTTP
+# Add-on; without it, InterceptorRoutes referencing this ConfigMap by name are
+# refused.
+#
+# The page itself lives as a plain, standalone file at files/index.html in
+# this chart. Run `pnpm dev` in core/coldstart-page (or `pnpm --filter
+# @lukasbriza/coldstart-page dev` from the repo root, works inside the
+# docker:dev container too) for a live-reloading local preview at
+# http://localhost:5500 — no Helm or `helm template` needed to iterate on it.
+#
+# The page has one {APP_NAME} placeholder, swapped below for the namespace's
+# entry in .Values.appNames (falling back to a generic label) — this is why
+# the ConfigMap is rendered per namespace instead of shared as-is even though
+# the source file is otherwise identical for every app.
+{{- range $ns := .Values.namespaces }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coldstart-page
+  namespace: {{ $ns }}
+  labels:
+    http.keda.sh/response-body: "true"
+data:
+  index.html: |
+{{ $.Files.Get "files/index.html" | replace "{APP_NAME}" (index $.Values.appNames $ns | default "Aplikace") | indent 4 }}
+{{- end }}

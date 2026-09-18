@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="3">
+  <title>Spouští se…</title>
+  <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l9 5v9l-9 5-9-5v-9z' fill='%232b6fb0'/%3E%3Cpath d='M12 2.5l9 5-9 5-9-5z' fill='%237dd3fc'/%3E%3Cpath d='M12 12.5v9l-9-5v-9z' fill='%23172a46'/%3E%3C/svg%3E">
+  <style>
+    :root { --hue: 199; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: flex; align-items: center; justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: radial-gradient(ellipse at center, #16213e 0%, #0f172a 70%);
+      color: #e2e8f0;
+      overflow: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: -10%;
+      background:
+        radial-gradient(circle at 28% 24%, rgba(56,189,248,0.12), transparent 55%),
+        radial-gradient(circle at 74% 78%, rgba(129,140,248,0.12), transparent 55%);
+      animation: drift 16s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(2%, -2%) scale(1.06); }
+    }
+    .box {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 44px 36px;
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(148, 197, 253, 0.15);
+      border-radius: 20px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+    .box::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.05;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    .stage {
+      width: 120px; height: 120px;
+      margin: 0 auto 56px;
+      perspective: 600px;
+      position: relative;
+    }
+    .glow {
+      position: absolute; inset: -40px;
+      background: radial-gradient(circle, hsla(var(--hue), 85%, 60%, 0.35) 0%, hsla(var(--hue), 85%, 60%, 0) 70%);
+      animation: pulse 2.4s ease-in-out infinite;
+      filter: blur(4px);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.85); opacity: 0.6; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .shadow {
+      position: absolute;
+      left: 50%; bottom: -22px;
+      width: 110px; height: 22px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(2,6,23,0.85) 0%, rgba(2,6,23,0) 72%);
+      animation: shadowPulse 4s linear infinite;
+    }
+    @keyframes shadowPulse {
+      0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.8; }
+      50%      { transform: translateX(-50%) scaleX(0.85); opacity: 0.55; }
+    }
+
+    .tilt {
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transform: rotateX(-24deg);
+    }
+    .cube {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: spin 4s linear infinite;
+      will-change: transform;
+    }
+    @keyframes spin {
+      from { transform: rotateY(0deg); }
+      to   { transform: rotateY(360deg); }
+    }
+    .face {
+      position: absolute;
+      width: 120px; height: 120px;
+      border: 1px solid rgba(148,197,253,0.6);
+      box-shadow: inset 0 0 20px rgba(56,189,248,0.2);
+      backface-visibility: hidden;
+    }
+    .face.front  { transform: translateZ(60px); background: linear-gradient(135deg, hsl(var(--hue), 60%, 45%), hsl(calc(var(--hue) + 40), 65%, 55%)); }
+    .face.back   { transform: translateZ(-60px) rotateY(180deg); background: linear-gradient(135deg, hsl(var(--hue), 50%, 25%), hsl(calc(var(--hue) + 40), 45%, 30%)); }
+    .face.right  { transform: rotateY(90deg) translateZ(60px); background: linear-gradient(135deg, hsl(var(--hue), 55%, 38%), hsl(calc(var(--hue) + 40), 50%, 40%)); }
+    .face.left   { transform: rotateY(-90deg) translateZ(60px); background: linear-gradient(135deg, hsl(var(--hue), 50%, 22%), hsl(calc(var(--hue) + 40), 40%, 28%)); }
+    .face.top    { transform: rotateX(90deg) translateZ(60px); background: linear-gradient(135deg, hsl(var(--hue), 80%, 78%), hsl(calc(var(--hue) + 40), 75%, 82%)); }
+    .face.bottom { transform: rotateX(-90deg) translateZ(60px); background: linear-gradient(135deg, hsl(var(--hue), 45%, 12%), hsl(calc(var(--hue) + 40), 40%, 16%)); }
+
+    h1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 6px; letter-spacing: 0.01em; }
+    .app-name { color: hsl(var(--hue), 85%, 65%); }
+    p { font-size: 0.85rem; color: #94a3b8; margin: 0; }
+    .cursor {
+      display: inline-block;
+      margin-left: 2px;
+      color: hsl(var(--hue), 85%, 65%);
+      animation: blink 0.9s step-start infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .cursor.done { animation: none; opacity: 0; transition: opacity 0.6s ease; }
+    .elapsed { margin-top: 10px; font-size: 0.78rem; color: #64748b; }
+
+    @media (prefers-reduced-motion: reduce) {
+      body::before, .glow, .cube, .shadow { animation: none; }
+      .cursor { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="stage">
+      <div class="glow"></div>
+      <div class="shadow"></div>
+      <div class="tilt">
+        <div class="cube">
+          <div class="face front"></div>
+          <div class="face back"></div>
+          <div class="face right"></div>
+          <div class="face left"></div>
+          <div class="face top"></div>
+          <div class="face bottom"></div>
+        </div>
+      </div>
+    </div>
+    <h1 id="title"><span class="app-name" id="app-name">{APP_NAME}</span><span id="suffix"> se probouzí&hellip;</span><span class="cursor" id="cursor">▍</span></h1>
+    <p id="subtitle">Tohle může trvat pár desítek vteřin. Stránka se sama obnoví.</p>
+    <p class="elapsed" id="elapsed" hidden></p>
+  </div>
+  <script>
+    (function () {
+      var appNameEl = document.getElementById('app-name');
+      var suffixEl = document.getElementById('suffix');
+      var cursorEl = document.getElementById('cursor');
+      var appName = appNameEl.textContent;
+      var suffix = suffixEl.textContent;
+
+      // Deterministic per-app accent hue so every app gets its own cube color
+      // without needing extra Helm config beyond the app name already there.
+      var hash = 0;
+      for (var c = 0; c < appName.length; c++) {
+        hash = (hash * 31 + appName.charCodeAt(c)) >>> 0;
+      }
+      var hue = hash % 360;
+      document.documentElement.style.setProperty('--hue', String(hue));
+
+      var faviconEl = document.getElementById('favicon');
+      if (faviconEl) {
+        var faviconSvg =
+          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>" +
+          "<path d='M12 2.5l9 5v9l-9 5-9-5v-9z' fill='hsl(" + hue + ",60%,45%)'/>" +
+          "<path d='M12 2.5l9 5-9 5-9-5z' fill='hsl(" + hue + ",80%,78%)'/>" +
+          "<path d='M12 12.5v9l-9-5v-9z' fill='hsl(" + hue + ",50%,22%)'/>" +
+          "</svg>";
+        faviconEl.href = 'data:image/svg+xml,' + encodeURIComponent(faviconSvg);
+      }
+
+      var titleBase = appName ? appName + ' se probouzí' : 'Aplikace se probouzí';
+      var dotCount = 0;
+      document.title = titleBase;
+      setInterval(function () {
+        dotCount = (dotCount + 1) % 4;
+        document.title = titleBase + '.'.repeat(dotCount);
+      }, 500);
+
+      var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        appNameEl.textContent = appName;
+        suffixEl.textContent = suffix;
+      } else {
+        appNameEl.textContent = '';
+        suffixEl.textContent = '';
+        var full = appName + suffix;
+        var i = 0;
+        (function typeStep() {
+          if (i < full.length) {
+            if (i < appName.length) {
+              appNameEl.textContent += full.charAt(i);
+            } else {
+              suffixEl.textContent += full.charAt(i);
+            }
+            i++;
+            setTimeout(typeStep, 45);
+          } else {
+            cursorEl.classList.add('done');
+          }
+        })();
+      }
+
+      try {
+        var key = 'coldstart-started-at';
+        var now = Date.now();
+        // A cold start rarely takes more than a couple minutes; anything older
+        // than this is a stale timestamp from a previous cold-start cycle in
+        // this same tab session (the app slept again after waking up), not
+        // this one, so start the counter over instead of showing a huge number.
+        var MAX_AGE_MS = 20 * 60 * 1000;
+        var startedAt = sessionStorage.getItem(key);
+        if (!startedAt || now - Number(startedAt) > MAX_AGE_MS) {
+          startedAt = String(now);
+          sessionStorage.setItem(key, startedAt);
+        }
+        var elapsedSec = Math.max(0, Math.round((now - Number(startedAt)) / 1000));
+        var elapsedEl = document.getElementById('elapsed');
+        elapsedEl.textContent = 'Čekáte ' + elapsedSec + ' s';
+        elapsedEl.hidden = false;
+
+        var subtitleEl = document.getElementById('subtitle');
+        if (elapsedSec >= 60) {
+          subtitleEl.textContent = 'Trvá to neobvykle dlouho. Zkuste stránku obnovit ručně, nebo to nahlaste správci.';
+        } else if (elapsedSec >= 15) {
+          subtitleEl.textContent = 'Trvá to déle než obvykle, ale pořád to běží…';
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

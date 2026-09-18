@@ -25,6 +25,7 @@ services:
       - '3000:3000' # Next.js / NestJS
       - '5173:5173' # Vite (React Router)
       - '6006:6006' # Storybook
+      - '5500:5500' # live-server (coldstart-page)
 
 volumes:
   node_modules:

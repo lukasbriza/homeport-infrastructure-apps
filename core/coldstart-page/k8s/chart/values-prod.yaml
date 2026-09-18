@@ -1,0 +1,17 @@
+# The live list — one entry per namespace that has scaleToZero.enabled: true
+# somewhere.
+namespaces:
+  - actual
+  - homer
+  - seafile
+  - donetick
+  - wishlist
+  - headlamp
+
+appNames:
+  actual: Actual Budget
+  homer: Homer
+  seafile: Seafile
+  donetick: Donetick
+  wishlist: Wishlist
+  headlamp: Headlamp
