@@ -8,10 +8,10 @@
 
 image:
   backend:
-    repository: lbriza/homeport
+    repository: ghcr.io/lukasbriza/infisical
     tag: infisical-backend-a010be6
   redis:
-    repository: lbriza/homeport
+    repository: ghcr.io/lukasbriza/infisical-redis
     tag: infisical-redis-a010be6
 
 # Name of the Secret created via `kubectl create secret generic <name>` with
