@@ -311,7 +311,7 @@ gets a login-token Secret the same way any local chart would, with no separate
    `helm dependency update infrastructure/headlamp/k8s/chart`.)
 
 3. Get the login token — `templates/admin-token.yaml` only declares the Secret's
-   *shape*; Kubernetes fills in the real token asynchronously once ArgoCD creates it:
+   _shape_; Kubernetes fills in the real token asynchronously once ArgoCD creates it:
 
    ```bash
    kubectl get secret headlamp-admin-token -n headlamp \
@@ -372,7 +372,7 @@ the time — it's opt-in per app, not a cluster-wide default.
    spinner that auto-refreshes every 3 seconds and switches to the real app once
    it's ready. It lives in this repo (`core/coldstart-page`) as its own small Helm
    chart rather than in each app, but KEDA requires the ConfigMap it renders to sit
-   in the *same namespace* as the `InterceptorRoute` using it — so the chart
+   in the _same namespace_ as the `InterceptorRoute` using it — so the chart
    renders one copy per namespace listed in its `values-prod.yaml`, not one shared
    resource.
 
@@ -461,7 +461,7 @@ ArgoCD-manageable like any other app in this repo.
 
 Apps that need a custom Docker image (like Infisical) use GitHub Actions, not a
 build step on the server. Pushing a version tag for that app triggers a workflow
-that builds the image, pushes it to Docker Hub, and commits the new image tag
+that builds the image, pushes it to GHCR (`ghcr.io/lukasbriza/<app>`), and commits the new image tag
 into the app's `values.yaml` — ArgoCD (or a manual `helm upgrade`) then picks
 that commit up and redeploys.
 

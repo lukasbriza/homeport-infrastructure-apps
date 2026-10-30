@@ -40,7 +40,7 @@ ArgoCD runs an "app of apps" pattern (`infrastructure/argocd/k8s/root.yaml`) wat
 Apps with a custom Docker image (currently just Infisical) release on a **version tag**
 (`<app>-v<version>`, e.g. `infisical-v1.2.3`), not on every push — see
 `.github/workflows/infisical-build-push.yml`. Pushing the tag builds the image, pushes
-it to Docker Hub, and commits the bumped tag into that app's `values.yaml`; ArgoCD
+it to GHCR (`ghcr.io/lukasbriza/<app>`), and commits the bumped tag into that app's `values.yaml`; ArgoCD
 picks up the commit from there.
 
 ## Common tasks
@@ -71,10 +71,10 @@ target React/Next/Nest/Expo code and don't apply here; the generic ones do —
   `pip install graphifyy`) builds a queryable graph of this repo into `graphify-out/`
   (gitignored, regenerable — never commit it). Build via the **terminal CLI**
   (`graphify .`), never through an agent — with no external key it falls back to using
-  the *host agent itself* as its LLM, which burns Claude session quota summarizing
+  the _host agent itself_ as its LLM, which burns Claude session quota summarizing
   every file.
   - **Code-only by default.** This repo's `.graphifyignore` excludes docs/images (so
-    the build is AST-only — no LLM, no API key, no token cost) *and* the local runtime
+    the build is AST-only — no LLM, no API key, no token cost) _and_ the local runtime
     data dirs that aren't source at all: `core/infisical/data/`,
     `core/infisical/database/` (a live Postgres data directory), `core/pi-hole/data/`,
     `infrastructure/portainer/data/`. `.graphifyignore` **replaces** `.gitignore` for

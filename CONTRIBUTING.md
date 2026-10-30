@@ -45,10 +45,14 @@ git tag <app>-v<version>   # e.g. infisical-v1.2.3
 git push origin <app>-v<version>
 ```
 
-This builds the image, pushes it to Docker Hub, and commits the new tag into
+This builds the image, pushes it to GHCR (`ghcr.io/lukasbriza/<app>`), and commits the new tag into
 that app's `values.yaml` — ArgoCD picks it up from there. See
 `.github/workflows/infisical-build-push.yml` for a working example, and
 `DEPLOYMENT.md` for the full loop.
+
+The first push of a new app creates its GHCR package as **private**. Open
+github.com/lukasbriza?tab=packages → the package → Package settings and switch
+it to **Public**, otherwise the cluster can't pull it (no pull secret is set up).
 
 ---
 
