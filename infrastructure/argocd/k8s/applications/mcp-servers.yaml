@@ -1,0 +1,26 @@
+# ArgoCD Application for mcp-servers (homeport-personal-apps repo). Deploys only on
+# a tag push (mcp-servers-v*) — see .github/workflows/mcp-servers-deploy.yml, which
+# triggers `argocd app sync`. The chart runs upstream images unmodified, so the tag
+# carries no image version; it is purely the "deploy now" signal. Auto-sync and
+# self-heal are intentionally off so nothing deploys except on that trigger.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mcp-servers
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
+    targetRevision: master
+    path: apps/mcp-servers
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mcp-servers
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
