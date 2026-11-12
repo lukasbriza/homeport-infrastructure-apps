@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: https://github.com/lukasbriza/homeport-personal-apps.git
     targetRevision: master
-    path: apps/mcp-servers
+    path: apps/mcp-servers/k8s/chart
     helm:
       valueFiles:
         - values.yaml
